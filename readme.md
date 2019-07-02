@@ -4,7 +4,7 @@
 ## TODO
  - Key Milestones
   - [x] Parse iNES files
-  - [ ] Create Cartridges (iNES + Mapper interface)
+  - [x] Create Cartridges (iNES + Mapper interface)
   - [ ] CPU
     - [ ] Set Up Memory Map
     - [ ] Core Loop / Basic Functionality
@@ -23,7 +23,7 @@
   - Better error handling (something like Result in Rust)
     - [ ] Remove asserts
   - Implement more Mappers
-    - [ ] 000
+    - [x] 000
     - [ ] 001
     - [ ] 002
     - [ ] 003

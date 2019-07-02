@@ -9,7 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "./nes/loadRom/LoadRom.hpp"
+#include "./nes/loadRom/Cartridge.hpp"
 #include "./util/util.h"
 
 int main(int argc, const char * argv[]) {
@@ -26,8 +26,30 @@ int main(int argc, const char * argv[]) {
         return -1;
     }
     
-    INES rom_file(rom_file_stream);
-    if(rom_file.is_valid){
+    // Read in data from data_stream of unknown size
+    uint8* data = nullptr;
+    uint32 data_len = 0;
+    
+    const uint CHUNK_SIZE = 0x4000;
+    for (uint chunk = 0; rom_file_stream; chunk++) {
+        // Allocate new data
+        uint8* new_data = new uint8 [CHUNK_SIZE * (chunk + 1)];
+        data_len = CHUNK_SIZE * (chunk + 1);
+        // Copy old data into the new data
+        for (uint i = 0; i < CHUNK_SIZE * chunk; i++)
+            new_data[i] = data[i];
+        
+        delete data;
+        data = new_data;
+        
+        // Read another chunk into the data
+        rom_file_stream.read((char*) data + CHUNK_SIZE * chunk, CHUNK_SIZE);
+    }
+    
+    // Generate cartridge from data
+    Cartridge rom_cart (data, data_len);
+    
+    if(rom_cart.is_valid()){
         std::cout<< "iNES file loaded successfully!\n";
     }
     else{

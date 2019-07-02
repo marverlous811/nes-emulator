@@ -1,20 +1,22 @@
 //
-//  LoadRom.hpp
+//  INes.hpp
 //  MyNes
 //
-//  Created by Ows on 6/27/19.
+//  Created by Ows on 7/2/19.
 //  Copyright © 2019 hieunq. All rights reserved.
 //
 
-#ifndef LoadRom_hpp
-#define LoadRom_hpp
+#ifndef INes_hpp
+#define INes_hpp
 
 #include <istream>
 #include "../../util/util.h"
 
+// iNES file container
+// https://wiki.nesdev.com/w/index.php/INES
 struct INES{
 private:
-    uint8* raw_data;
+    const uint8* raw_data;
     uint32 data_len;
     
 public:
@@ -23,12 +25,12 @@ public:
     
     //ROM
     struct{
-        uint8* prg_rom; //start of pro_rom bank (16k for each)
-        uint8* chr_rom; //start of chr_rom bank (8k for each)
+        const uint8* prg_rom; //start of pro_rom bank (16k for each)
+        const uint8* chr_rom; //start of chr_rom bank (8k for each)
         
-        uint8* trn_rom; //Start of Trainer
-        uint8* pci_rom; //start of play choice INST-ROM
-        uint8* pc_prom;  //start play choice PROM
+        const uint8* trn_rom; //Start of Trainer
+        const uint8* pci_rom; //start of play choice INST-ROM
+        const uint8* pc_prom;  //start play choice PROM
     } roms;
     
     struct{
@@ -47,9 +49,7 @@ public:
     } flags;
     
     ~INES();
-    INES(std::istream& file);
-    INES(const INES& other);
-    INES& operator= (const INES& other);
+    INES(const uint8* data, uint32 data_len);
 };
 
-#endif /* LoadRom_hpp */
+#endif /* INes_hpp */
