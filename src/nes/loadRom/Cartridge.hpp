@@ -10,10 +10,11 @@
 #define Cartridge_hpp
 
 #include "../../util/util.h"
+#include "../../util/memory.h"
 #include "INes.hpp"
 #include "../mapper/mapper.hpp"
 
-class Cartridge{
+class Cartridge final : public Memory{
 private:
     const INES* rom_data;
     Mapper* mapper;
@@ -21,10 +22,10 @@ public:
     Cartridge(const uint8* data, uint32 data_length);
     ~Cartridge();
     
-    uint8 read(uint16 addr);
-    void write(uint16 addr, uint8 val);
+    uint8 read(uint16 addr) override;
+    void write(uint16 addr, uint8 val) override;
     
-    bool is_valid();
+    bool is_valid() const;
 };
 
 #endif /* Cartridge_hpp */

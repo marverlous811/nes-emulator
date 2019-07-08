@@ -9,15 +9,15 @@
 #include "mapper_000.hpp"
 #include <assert.h>
 
-Mapper_000::Mapper_000(const INES* rom_file) : Mapper(rom_file){
-    if(this->rom_file->flags.prg_rom_pages == 2){
-        this->lo_rom = this->rom_file->roms.prg_rom + 0x0000;
-        this->hi_rom = this->rom_file->roms.prg_rom + 0x2000;
+Mapper_000::Mapper_000(const INES& rom_file) : Mapper(rom_file){
+    if(this->rom_file.flags.prg_rom_pages == 2){
+        this->lo_rom = this->rom_file.roms.prg_rom + 0x0000;
+        this->hi_rom = this->rom_file.roms.prg_rom + 0x2000;
     }
     else{
         //lo_rom == hi_rom
-        this->lo_rom = this->rom_file->roms.prg_rom + 0x0000;
-        this->hi_rom = this->rom_file->roms.prg_rom + 0x0000;
+        this->lo_rom = this->rom_file.roms.prg_rom + 0x0000;
+        this->hi_rom = this->rom_file.roms.prg_rom + 0x0000;
     }
 }
 

@@ -14,7 +14,7 @@
 
 class Mapper_000 final : public Mapper{
 public:
-    Mapper_000(const INES* rom_file);
+    Mapper_000(const INES& rom_file);
     ~Mapper_000();
     
     uint8 read(uint16 addr) override;

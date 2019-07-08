@@ -10,7 +10,7 @@
 
 Cartridge::Cartridge(const uint8* data, uint32 data_len){
     this->rom_data = new INES(data, data_len);
-    this->mapper = Mapper::Factory(this->rom_data);
+    this->mapper = Mapper::Factory(*this->rom_data);
 }
 
 Cartridge::~Cartridge(){
@@ -26,6 +26,6 @@ void Cartridge::write(uint16 addr, uint8 val){
     this->mapper->write(addr, val);
 }
 
-bool Cartridge::is_valid(){
+bool Cartridge::is_valid() const{
     return this->rom_data->is_valid && this->mapper != nullptr;
 }

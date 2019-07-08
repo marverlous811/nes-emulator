@@ -27,4 +27,5 @@ inline bool nth_bit(T x, uint8 n) {
     return (x >> n ) & 1;
 }
 
+#define BLOW_ON_CONTACTS(cartridge)
 #endif /* util_h */
