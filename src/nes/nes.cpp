@@ -23,9 +23,13 @@ Nes::Nes(){
         *new MemorySniffer("CPU -> RAM", VoidMemory::Get()),
         new MemorySniffer("CPU -> RAM", this->cart)
     );
+    
+    //create processor
+    this->cpu = new CPU(*this->cpu_mmu);
 }
 
 Nes::~Nes(){
+    delete this->cpu;
     delete this->cpu_mmu;
     delete this->cpu_ram;
 }
@@ -51,4 +55,14 @@ void Nes::stop(){
 
 bool Nes::isRunning() const{
     return this->is_running;
+}
+
+// Power Cycling initializes all the components to their "power on" state
+void Nes::power_cycle(){
+    this->cpu->power_cycle();
+    this->cpu_ram->clear();
+}
+
+void Nes::reset(){
+    this->cpu->reset();
 }

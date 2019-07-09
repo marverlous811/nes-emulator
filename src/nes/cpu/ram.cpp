@@ -18,14 +18,14 @@ Ram::Ram(uint32 ram_size) {
     this->ram = new uint8[this->size];
     
     //Init Ram
-    for(uint32 addr = 0; addr < ram_size; addr++){
+    for(uint32 addr = 0; addr < this->size; addr++){
         this->ram[addr] = 0x00;
     }
 }
 
 Ram::~Ram(){
     this->size = 0;
-    delete this->ram;
+    delete[] this->ram;
 }
 
 uint8 Ram::read(uint16 addr){
@@ -38,4 +38,11 @@ void Ram::write(uint16 addr, uint8 val){
     assert(addr < this->size);
     
     this->ram[addr] = val;
+}
+
+void Ram::clear(){
+    //Reset ram to default value
+    for(uint32 addr = 0; addr < this->size; addr++){
+        this->ram[addr] = 0x00;
+    }
 }

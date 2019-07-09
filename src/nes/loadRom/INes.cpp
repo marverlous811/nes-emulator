@@ -70,14 +70,14 @@ INES::INES(const uint8* data, uint32 data_len) {
     
     // Section             | Multiplier    | Size
     // --------------------|---------------|--------
-    // Header              | 1             | 0xF
+    // Header              | 1             | 0x10
     // Trainer ROM         | has_trainer   | 0x200
     // Program ROM         | prg_rom_pages | 0x4000
     // Character ROM       | chr_rom_pages | 0x2000
     // PlayChoice INST-ROM | is_PC10       | 0x2000
-    // PlayChoice PROM     | is_PC10       | 0xF
+    // PlayChoice PROM     | is_PC10       | 0x10
     
-    this->roms.trn_rom = data + 0xF;
+    this->roms.trn_rom = data + 0x10;
     this->roms.prg_rom = this->roms.trn_rom + 0x200  * this->flags.has_trainer;
     this->roms.chr_rom = this->roms.prg_rom + 0x4000 * this->flags.prg_rom_pages;
     this->roms.pci_rom = this->roms.chr_rom + 0x2000 * this->flags.chr_rom_pages;
@@ -85,5 +85,5 @@ INES::INES(const uint8* data, uint32 data_len) {
 }
 
 INES::~INES() {
-    delete raw_data;
+    delete[] raw_data;
 }

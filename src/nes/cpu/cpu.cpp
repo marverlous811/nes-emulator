@@ -7,61 +7,52 @@
 //
 
 #include "cpu.hpp"
+#include <cstdio>
 
-CPU_MMU::CPU_MMU(
-    Memory& ram,
-    Memory& ppu,
-    Memory& apu,
-    Memory& dma,
-    Memory& joy,
-    Memory* rom
-): ram(ram), ppu(ppu), apu(apu), dma(dma), joy(joy), rom(rom)
-{}
+CPU::~CPU(){}
 
-// 0x0000 ... 0x1FFF: 0x0000 - 0x07FF are RAM           (Mirrored 4x)
-// 0x2000 ... 0x3FFF: 0x2000 - 0x2007 are PPU Regusters (Mirrored every 8 bytes)
-// 0x4000 ... 0x4013: APU registers
-// 0x4014           : DMA
-// 0x4015           : APU register
-// 0x4016           : Joy1 Data (Read) and Joystick Strobe (Write)
-// 0x4017           : Joy2 Data (Read) and APU thing (Write)
-// 0x4018 ... 0xFFFF: Cartridge ROM (may not be plugged in)
-uint8 CPU_MMU::read(uint16 addr){
-    switch (addr) {
-        case 0x0000 ... 0x07FF: return ram.read(addr);
-        case 0x2000 ... 0x2007: return ppu.read(addr);
-        case 0x4000 ... 0x4013: return apu.read(addr);
-        case 0x4014           : return dma.read(addr);
-        case 0x4015           : return apu.read(addr);
-        case 0x4016           : return joy.read(addr);
-        case 0x4017           : return joy.read(addr);
-        case 0x4018 ... 0xFFFF: return rom ? rom->read(addr) : 0x00;
-    }
+CPU::CPU(Memory& mem) : mem(mem){
+    this->power_cycle();
+}
+
+// https://wiki.nesdev.com/w/index.php/CPU_power_up_state
+void CPU::power_cycle(){
+    this->reg.p.raw = 0b00110100; //interrupt = 1, break = 1
     
-    assert(false);
-    return 0;
-}
-
-void CPU_MMU::write(uint16 addr, uint8 val){
-    switch (addr) {
-        case 0x0000 ... 0x07FF: return ram.write(addr, val);
-        case 0x2000 ... 0x2007: return ppu.write(addr, val);
-        case 0x4000 ... 0x4013: return apu.write(addr, val);
-        case 0x4014           : return dma.write(addr, val);
-        case 0x4015           : return apu.write(addr, val);
-        case 0x4016           : return joy.write(addr, val);
-        case 0x4017           : return joy.write(addr, val);
-        case 0x4018 ... 0xFFFF: return rom ? rom->write(addr, val) : void();
-    }
+    this->reg.a = 0x00;
+    this->reg.x = 0x00;
+    this->reg.y = 0x00;
     
-    assert(false);
-    return void();
+    this->reg.sp = 0x5D;
+    
+    // Read initial PC from reset vector
+    this->reg.pc = this->read(0xFFFC);
 }
 
-void CPU_MMU::addCartridge(Memory *cart){
-    this->rom = cart;
+// https://wiki.nesdev.com/w/index.php/CPU_power_up_state
+void CPU::reset(){
+    this->reg.sp -= 3;  // the stack pointer is decremented by 3 (weird...)
+    this->reg.p.i = 1;
+    
+    // Read from reset vector
+    this->reg.pc = this->read_16(0xFFFC);
 }
 
-void CPU_MMU::removeCartridge(){
-    this->rom = nullptr;
+/*----------  Helpers  ----------*/
+uint8 CPU::read(uint16 addr){
+    return this->mem.read(addr);
+}
+
+void CPU::write(uint16 addr, uint8 val){
+    this->mem.write(addr, val);
+}
+
+uint16 CPU::read_16(uint16 addr){
+    return this->read(addr + 0) |
+    (this->read(addr + 1) << 8);
+}
+
+void CPU::write_16(uint16 addr, uint8 val){
+    this->write(addr + 0, val);
+    this->write(addr + 1, val);
 }

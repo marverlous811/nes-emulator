@@ -24,6 +24,7 @@ public:
     
     uint8 read(uint16 addr) override;
     void write(uint16 addr, uint8 val) override;
+    void clear();
 };
 
 #endif /* ram_hpp */

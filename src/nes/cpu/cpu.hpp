@@ -11,39 +11,56 @@
 
 #include "../../util/util.h"
 #include "../../util/memory.h"
-#include "../loadRom/Cartridge.hpp"
-#include "./ram.hpp"
+#include "../../util/bitfield.h"
 
-// CPU Memory Map (MMU)
-// NESdoc.pdf
-// https://wiki.nesdev.com/w/index.php/CPU_memory_map
-// https://wiki.nesdev.com/w/index.php/2A03
-class CPU_MMU final : public Memory{
+// MOS 6502 (no BCD)
+// https://wiki.nesdev.com/w/index.php/CPU
+class CPU{
 private:
-    // Fixed Referenced (these will never be invalidated)
-    Memory& ram;
-    Memory& ppu;
-    Memory& apu;
-    Memory& dma;
-    Memory& joy;
+/*----------  Hardware  ----------*/
+    Memory& mem;
     
-    // ROM is subject to change
-    Memory* rom;
+    //register
+    struct{
+        // special register
+        uint8 sp; //stack pointer
+        uint16 pc; //program counter
+        
+        //processor status
+        union{
+            uint8 raw; //underlying byte
+            BitField<7> n; //negative
+            BitField<6> v; //overflow
+            //BitField<5> _; unuse
+            BitField<4> b; //break command
+            BitField<3> d; //decimal mode
+            BitField<2> i; //interrupt disabled
+            BitField<1> z; //zero flag
+            BitField<0> c; //carry flag
+        } p;
+        
+        // general register
+        uint8 a; //accumulator
+        uint8 x; //Index X
+        uint8 y; //Index Y
+    } reg;
+    
+/*----------  Emulation Vars  ----------*/
+    uint64 cycles; //Cycles elapsed
+    bool is_running;
+    
+/*--------------  Helpers  -------------*/
+    uint8 read (uint16 addr);
+    uint16 read_16(uint16 addr);
+    void write(uint16 addr, uint8 val);
+    void write_16(uint16 addr, uint8 val);
+    
 public:
-    CPU_MMU(
-        Memory& ram,
-        Memory& ppu,
-        Memory& apu,
-        Memory& dma,
-        Memory& joy,
-        Memory* rom
-    );
+    CPU(Memory& mem);
+    ~CPU();
     
-    uint8 read(uint16 addr) override;
-    void write(uint16 addr, uint8 val) override;
-    
-    void addCartridge(Memory* cart);
-    void removeCartridge();
+    void power_cycle();
+    void reset();
 };
 
 #endif /* cpu_hpp */

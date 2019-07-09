@@ -11,6 +11,7 @@
 
 #include "./loadRom/Cartridge.hpp"
 #include "./cpu/cpu.hpp"
+#include "./cpu/cpu_mmu.hpp"
 #include "./cpu/ram.hpp"
 #include "../util/util.h"
 
@@ -20,8 +21,15 @@ private:
     Cartridge* cart;
     /*------------  Owned Resources  ------------*/
     //CPU
+    CPU *cpu;
+    //RAM
     Ram *cpu_ram;
+    //RAM ppu_ram
+    //JOY joy
+    //CPU MMU
     CPU_MMU *cpu_mmu;
+    //PPU MMU
+    //DMA MMU
     
     /*-----------------  Flags  -----------------*/
     bool is_running;
@@ -32,8 +40,10 @@ public:
     
     bool loadCartridge(Cartridge *cart);
     
-    void start();
-    void stop();
+    void power_cycle();  // Set all volatile components to default power_on state
+    void reset();        // Set all volatile components to default reset state
+    void start();        // start execution
+    void stop();         // stop execution
     
     bool isRunning() const;
 };

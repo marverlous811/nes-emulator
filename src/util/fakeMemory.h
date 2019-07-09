@@ -47,7 +47,7 @@ public:
         
         // only read once, to prevent side effects
         uint8 val = this->mem->read(addr);
-        printf("[%s] R 0x%04X -> 0x%X\n", this->label, addr, val);
+        printf("[%s] R 0x%04X -> 0x%02X\n", this->label, addr, val);
         return val;
     }
     
@@ -60,7 +60,7 @@ public:
             return;
         }
         
-        printf("[%s] W 0x%04X <- 0x%X\n", this->label, addr, val);
+        printf("[%s] W 0x%04X <- 0x%02X\n", this->label, addr, val);
         this->mem->write(addr, val);
     };
 };
