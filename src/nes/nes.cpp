@@ -5,9 +5,51 @@
 //  Created by Ows on 7/6/19.
 //  Copyright © 2019 hieunq. All rights reserved.
 //
-
+#include <iostream>
+#include <fstream>
 #include "nes.hpp"
 #include "../util/fakeMemory.h"
+
+int startNes(char* path){
+    std::ifstream rom_file(path);
+    if(!rom_file.is_open()){
+        std::cerr << "could not open '" << path << "'\n";
+        return -1;
+    }
+
+    rom_file.seekg(0, rom_file.end);
+    uint32 data_len = rom_file.tellg();
+    rom_file.seekg(0, rom_file.beg);
+
+    uint8* data = new uint8 [data_len];
+    rom_file.read((char*) data, data_len);
+
+    // Generate cartridge from data
+    Cartridge* rom_cart = new Cartridge(data, data_len);
+
+    if(rom_cart->is_valid()){
+        std::cout<< "iNES file loaded successfully!\n";
+    }
+    else{
+        std::cerr << "Given file was not an iNES file!\n";
+        return -1;
+    }
+
+    Nes* nes = new Nes();
+    bool res = nes->loadCartridge(rom_cart);
+    std::cout<<"ines load cartidge: "<<res<<std::endl;
+    nes->start();
+
+    while (true) {
+        nes->step();
+        if(nes->isRunning() == false){
+            break;
+        }
+    }
+
+    delete rom_cart;
+    return 0;
+}
 
 Nes::Nes(){
     this->cart = nullptr;

@@ -15,6 +15,8 @@
 #include "./cpu/ram.hpp"
 #include "../util/util.h"
 
+int startNes(char* path);
+
 class Nes{
 private:
     /*----------  Borrowed Resources  -----------*/
