@@ -73,6 +73,14 @@ int main(int argc, const char * argv[]) {
     bool res = nes->loadCartridge(rom_cart);
     std::cout<<"ines load cartidge: "<<res<<std::endl;
     nes->start();
+    
+    while (true) {
+        nes->step();
+        if(nes->isRunning() == false){
+            break;
+        }
+    }
+    
     delete rom_cart;
     return 0;
 }

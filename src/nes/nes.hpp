@@ -45,6 +45,8 @@ public:
     void start();        // start execution
     void stop();         // stop execution
     
+    void step();         // Step processors
+    
     bool isRunning() const;
 };
 

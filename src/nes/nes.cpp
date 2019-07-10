@@ -16,16 +16,18 @@ Nes::Nes(){
     
     // Init MMUs
     this->cpu_mmu = new CPU_MMU(
-        *new MemorySniffer("CPU -> RAM", this->cpu_ram),
-        *new MemorySniffer("CPU -> RAM", VoidMemory::Get()),
-        *new MemorySniffer("CPU -> RAM", VoidMemory::Get()),
-        *new MemorySniffer("CPU -> RAM", VoidMemory::Get()),
-        *new MemorySniffer("CPU -> RAM", VoidMemory::Get()),
-        new MemorySniffer("CPU -> RAM", this->cart)
+        *this->cpu_ram,
+        *VoidMemory::Get(),
+        *VoidMemory::Get(),
+        *VoidMemory::Get(),
+        *VoidMemory::Get(),
+        this->cart
     );
     
     //create processor
     this->cpu = new CPU(*this->cpu_mmu);
+    
+    this->is_running = false;
 }
 
 Nes::~Nes(){
@@ -40,7 +42,7 @@ bool Nes::loadCartridge(Cartridge *cart){
     }
     
     this->cart = cart;
-    this->cpu_mmu->addCartridge(cart);
+    this->cpu_mmu->addCartridge(this->cart);
     
     return true;
 }
@@ -59,10 +61,19 @@ bool Nes::isRunning() const{
 
 // Power Cycling initializes all the components to their "power on" state
 void Nes::power_cycle(){
+    this->is_running = true;
     this->cpu->power_cycle();
     this->cpu_ram->clear();
 }
 
 void Nes::reset(){
+    this->is_running = true;
     this->cpu->reset();
+}
+
+void Nes::step(){
+    uint8 cpu_cycles = this->cpu->step();
+    if(this->cpu->getState() == CPU::State::Halted){
+        this->is_running = false;
+    }
 }

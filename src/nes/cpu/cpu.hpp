@@ -16,6 +16,11 @@
 // MOS 6502 (no BCD)
 // https://wiki.nesdev.com/w/index.php/CPU
 class CPU{
+public:
+    enum class State {
+        Running,
+        Halted
+    };
 private:
 /*----------  Hardware  ----------*/
     Memory& mem;
@@ -23,7 +28,7 @@ private:
     //register
     struct{
         // special register
-        uint8 sp; //stack pointer
+        uint8 sp; //stack pointer (offset from 0x0100)
         uint16 pc; //program counter
         
         //processor status
@@ -47,13 +52,20 @@ private:
     
 /*----------  Emulation Vars  ----------*/
     uint64 cycles; //Cycles elapsed
-    bool is_running;
+    State state;   //CPU state
     
 /*--------------  Helpers  -------------*/
+    //read write mem
     uint8 read (uint16 addr);
     uint16 read_16(uint16 addr);
     void write(uint16 addr, uint8 val);
     void write_16(uint16 addr, uint8 val);
+    
+    //Push/pop stack
+    uint8 s_pull();
+    uint16 s_pull_16();
+    void s_push(uint8 val);
+    void s_push_16(uint16 val);
     
 public:
     CPU(Memory& mem);
@@ -61,6 +73,9 @@ public:
     
     void power_cycle();
     void reset();
+    
+    CPU::State getState() const;
+    uint8 step();
 };
 
 #endif /* cpu_hpp */
