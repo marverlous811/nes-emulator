@@ -14,14 +14,15 @@
 #include "INes.hpp"
 #include "../mapper/mapper.hpp"
 
-class Cartridge final : public Memory{
+class Cartridge final : public IMemory{
 private:
     const INES* rom_data;
     Mapper* mapper;
 public:
     Cartridge(const uint8* data, uint32 data_length);
     ~Cartridge();
-    
+
+    uint8 peek(uint16 addr) const override;
     uint8 read(uint16 addr) override;
     void write(uint16 addr, uint8 val) override;
     

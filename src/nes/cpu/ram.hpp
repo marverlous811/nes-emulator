@@ -14,14 +14,15 @@
 
 // Dead simple 16 bit RAM ADT
 // (max 64K of RAM)
-class Ram final : public Memory{
+class Ram final : public IMemory{
 private:
     uint8* ram;
     uint32 size;
 public:
     Ram(uint32 ram_size);
     ~Ram();
-    
+
+    uint8 peek(uint16 addr) const override;
     uint8 read(uint16 addr) override;
     void write(uint16 addr, uint8 val) override;
     void clear();

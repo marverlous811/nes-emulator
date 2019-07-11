@@ -12,7 +12,7 @@
 
 CPU::~CPU(){}
 
-CPU::CPU(Memory& mem) : mem(mem){
+CPU::CPU(IMemory& mem) : mem(mem){
     this->power_cycle();
 }
 

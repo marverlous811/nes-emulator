@@ -16,11 +16,12 @@
 // Void Memory Singleton
 // Returns 0 on read
 // No effect on write
-class VoidMemory : public Memory{
+class VoidMemory : public IMemory{
 private:
     VoidMemory() = default;
     
 public:
+    uint8 peek(uint16 addr) const override  { return 0; }
     uint8 read(uint16 addr) override { return 0; }
     void write(uint16 addr, uint8 val) override {}
     
@@ -32,38 +33,49 @@ public:
 
 // Wrapper that transaparently intercepts all transactions that occur through a
 // given Memory* and logs them
-class MemorySniffer final : public Memory{
+class MemorySniffer final : public IMemory{
 private:
     const char* label;
-    Memory* mem;
+    IMemory* mem;
     
 public:
-    MemorySniffer(const char* label, Memory* mem) : mem(mem), label(label){}
-    uint8 read(uint16 addr) override{
-        if(this->mem == nullptr){
-            printf("[%s] Memory is not define\n", this->label);
-            return 0x00;
-        }
-        
-        // only read once, to prevent side effects
-        uint8 val = this->mem->read(addr);
-        printf("[%s] R 0x%04X -> 0x%02X\n", this->label, addr, val);
-        return val;
-    }
-    
-    void write(uint16 addr, uint8 val) override {
-        if (this->mem == nullptr) {
-            printf(
-                   "[%s] Underlying Memory is nullptr!\n",
-                   this->label
-                   );
-            return;
-        }
-        
-        printf("[%s] W 0x%04X <- 0x%02X\n", this->label, addr, val);
-        this->mem->write(addr, val);
-    };
+    MemorySniffer(const char* label, IMemory* mem) : mem(mem), label(label){}
+    uint8  read(uint16 addr) override ;
+    uint8  peek(uint16 addr) const override ;
+    void write(uint16 addr, uint8 val) override ;
 };
+
+uint8  MemorySniffer::read(uint16 addr) {
+    if(this->mem == nullptr){
+        printf("[%s] Underlying IMemory is nullptr\n", this->label);
+        return 0x00;
+    }
+
+    uint8 val = this->mem->read(addr);
+    printf("[%s] R 0x%04X -> 0x%02X\n", this->label, addr, val);
+    return val;
+}
+
+uint8 MemorySniffer::peek(uint16 addr) const {
+    if(this->mem == nullptr){
+        printf("[%s] Underlying IMemory is nullptr\n", this->label);
+        return 0x00;
+    }
+
+    uint8 val = this->mem->peek(addr);
+    printf("[%s] R 0x%04X -> 0x%02X\n", this->label, addr, val);
+    return val;
+}
+
+void MemorySniffer::write(uint16 addr, uint8 val) {
+    if(this->mem == nullptr){
+        printf("[%s] Underlying IMemory is nullptr\n", this->label);
+        return;
+    }
+
+    printf("[%s] R 0x%04X -> 0x%02X\n", this->label, addr, val);
+    this->mem->write(addr, val);
+}
 
 
 #endif /* fakeMemory_h */

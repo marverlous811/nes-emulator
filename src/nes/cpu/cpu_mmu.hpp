@@ -18,31 +18,32 @@
 // NESdoc.pdf
 // https://wiki.nesdev.com/w/index.php/CPU_memory_map
 // https://wiki.nesdev.com/w/index.php/2A03
-class CPU_MMU final : public Memory{
+class CPU_MMU final : public IMemory{
 private:
     // Fixed Referenced (these will never be invalidated)
-    Memory& ram;
-    Memory& ppu;
-    Memory& apu;
-    Memory& dma;
-    Memory& joy;
+    IMemory& ram;
+    IMemory& ppu;
+    IMemory& apu;
+    IMemory& dma;
+    IMemory& joy;
     
     // ROM is subject to change
-    Memory* rom;
+    IMemory* rom;
 public:
     CPU_MMU(
-            Memory& ram,
-            Memory& ppu,
-            Memory& apu,
-            Memory& dma,
-            Memory& joy,
-            Memory* rom
+            IMemory& ram,
+            IMemory& ppu,
+            IMemory& apu,
+            IMemory& dma,
+            IMemory& joy,
+            IMemory* rom
             );
-    
+
+    uint8 peek(uint16 addr) const override ;
     uint8 read(uint16 addr) override;
     void write(uint16 addr, uint8 val) override;
     
-    void addCartridge(Memory* cart);
+    void addCartridge(IMemory* cart);
     void removeCartridge();
 };
 

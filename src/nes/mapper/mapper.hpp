@@ -13,7 +13,7 @@
 #include "../../util/memory.h"
 #include "../loadRom/INes.hpp"
 
-class Mapper : public Memory{
+class Mapper : public IMemory{
 protected:
     const INES& rom_file;
     const uint8* lo_rom;
@@ -22,7 +22,8 @@ protected:
 public:
     Mapper(const INES& rom_file) : rom_file(rom_file) {};
     virtual ~Mapper() {};
-    
+
+    virtual uint8 peek(uint16 addr) const = 0;
     virtual uint8 read(uint16 addr) = 0;
     virtual void write(uint16 addr, uint8 val) = 0;
     

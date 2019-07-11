@@ -28,10 +28,13 @@ Ram::~Ram(){
     delete[] this->ram;
 }
 
-uint8 Ram::read(uint16 addr){
+uint8  Ram::peek(uint16 addr) const {
     assert(addr < this->size);
-    
     return this->ram[addr];
+}
+
+uint8 Ram::read(uint16 addr){
+    return this->peek(addr);
 }
 
 void Ram::write(uint16 addr, uint8 val){

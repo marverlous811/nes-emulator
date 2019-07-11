@@ -23,7 +23,7 @@ public:
     };
 private:
 /*----------  Hardware  ----------*/
-    Memory& mem;
+    IMemory& mem;
     
     //register
     struct{
@@ -68,7 +68,7 @@ private:
     void s_push_16(uint16 val);
     
 public:
-    CPU(Memory& mem);
+    CPU(IMemory& mem);
     ~CPU();
     
     void power_cycle();

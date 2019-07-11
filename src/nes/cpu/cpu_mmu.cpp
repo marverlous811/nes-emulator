@@ -9,14 +9,30 @@
 #include "cpu_mmu.hpp"
 
 CPU_MMU::CPU_MMU(
-                 Memory& ram,
-                 Memory& ppu,
-                 Memory& apu,
-                 Memory& dma,
-                 Memory& joy,
-                 Memory* rom
+                 IMemory& ram,
+                 IMemory& ppu,
+                 IMemory& apu,
+                 IMemory& dma,
+                 IMemory& joy,
+                 IMemory* rom
                  ): ram(ram), ppu(ppu), apu(apu), dma(dma), joy(joy), rom(rom)
 {}
+
+uint8 CPU_MMU::peek(uint16 addr) const {
+    switch (addr) {
+        case 0x0000 ... 0x07FF: return ram.peek(addr);
+        case 0x2000 ... 0x2007: return ppu.peek(addr);
+        case 0x4000 ... 0x4013: return apu.peek(addr);
+        case 0x4014           : return dma.peek(addr);
+        case 0x4015           : return apu.peek(addr);
+        case 0x4016           : return joy.peek(addr);
+        case 0x4017           : return joy.peek(addr);
+        case 0x4018 ... 0xFFFF: return rom ? rom->peek(addr) : 0x00;
+    }
+
+    assert(false);
+    return 0;
+}
 
 // 0x0000 ... 0x1FFF: 0x0000 - 0x07FF are RAM           (Mirrored 4x)
 // 0x2000 ... 0x3FFF: 0x2000 - 0x2007 are PPU Regusters (Mirrored every 8 bytes)
@@ -50,7 +66,7 @@ void CPU_MMU::write(uint16 addr, uint8 val){
         case 0x4014           : return dma.write(addr, val);
         case 0x4015           : return apu.write(addr, val);
         case 0x4016           : return joy.write(addr, val);
-        case 0x4017           : return joy.write(addr, val);
+        case 0x4017           : return apu.write(addr, val);
         case 0x4018 ... 0xFFFF: return rom ? rom->write(addr, val) : void();
     }
     
@@ -58,7 +74,7 @@ void CPU_MMU::write(uint16 addr, uint8 val){
     return void();
 }
 
-void CPU_MMU::addCartridge(Memory *cart){
+void CPU_MMU::addCartridge(IMemory *cart){
     this->rom = cart;
 }
 

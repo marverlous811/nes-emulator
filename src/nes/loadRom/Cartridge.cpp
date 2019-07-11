@@ -18,6 +18,10 @@ Cartridge::~Cartridge(){
     delete this->mapper;
 }
 
+uint8 Cartridge::peek(uint16 addr) const {
+    return this->mapper->peek(addr);
+}
+
 uint8 Cartridge::read(uint16 addr){
     return this->mapper->read(addr);
 }

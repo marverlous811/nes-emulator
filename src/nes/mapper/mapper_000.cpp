@@ -23,17 +23,21 @@ Mapper_000::Mapper_000(const INES& rom_file) : Mapper(rom_file){
 
 Mapper_000::~Mapper_000() {}
 
-uint8 Mapper_000::read(uint16 addr){
+uint8 Mapper_000::peek(uint16 addr) const {
     assert(addr >= 0x4020); //remove once mapping PPU
-    
+
     switch (addr) {
         case 0x4020 ... 0x5FFF: break; //Nothing in "Cartridge Expansion ROM"
         case 0x6000 ... 0x7FFF: break; //Nothing in SRAM
         case 0x8000 ... 0xBFFF: return this->lo_rom[addr - 0x8000];
         case 0xC000 ... 0xFFFF: return this->hi_rom[addr - 0xC000];
     }
-    
+
     return 0x00;
+}
+
+uint8 Mapper_000::read(uint16 addr){
+    return this->peek(addr);
 }
 
 void Mapper_000::write(uint16 addr, uint8 val){
