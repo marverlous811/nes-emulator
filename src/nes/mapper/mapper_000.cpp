@@ -26,12 +26,10 @@ Mapper_000::~Mapper_000() {}
 uint8 Mapper_000::peek(uint16 addr) const {
     assert(addr >= 0x4020); //remove once mapping PPU
 
-    switch (addr) {
-        case 0x4020 ... 0x5FFF: break; //Nothing in "Cartridge Expansion ROM"
-        case 0x6000 ... 0x7FFF: break; //Nothing in SRAM
-        case 0x8000 ... 0xBFFF: return this->lo_rom[addr - 0x8000];
-        case 0xC000 ... 0xFFFF: return this->hi_rom[addr - 0xC000];
-    }
+    if(in_range(addr, 0x4020, 0x5FFF)){} //Nothing in "Cartridge Expansion ROM"
+    else if(in_range(addr, 0x6000, 0x7FFF)){} //Nothing in SRAM
+    else if(in_range(addr, 0x8000, 0xBFFF)){ return this->lo_rom[addr - 0x8000]; }
+    else if(in_range(addr, 0xC000, 0xFFFF)){ return this->hi_rom[addr - 0xC000]; }
 
     return 0x00;
 }

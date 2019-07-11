@@ -27,5 +27,11 @@ inline bool nth_bit(T x, uint8 n) {
     return (x >> n ) & 1;
 }
 
+//check if number is in range
+template <typename T1, typename T2>
+bool in_range (T1 x, T2 min, T2 max) { return x >= min && x <= max; }
+template <typename T1, typename T2>
+bool in_range (T1 x, T2 val) { return x == val; }
+
 #define BLOW_ON_CONTACTS(cartridge)
 #endif /* util_h */

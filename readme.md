@@ -11,7 +11,7 @@
       - Read / Write RAM
       - Addressing Modes
       - Fetch - Decode - Execute
-    - [ ] Opcodes
+    - [ ] Implementing Opcodes
     - [ ] Handle Interrupts
   - [ ] PPU
     - [ ] Set Up Memory Map
