@@ -57,11 +57,12 @@ private:
     
 /*--------------  Helpers  -------------*/
     //fetch arguments for current instruction
-    uint16 get_instr_args(Instrcutions::Opcode& opcode);
+    uint16 get_operand_addr(Instructions::Opcode& opcode);
 
     //read write mem
     uint8 mem_read (uint16 addr);
     uint16 mem_read_16(uint16 addr);
+    uint16 mem_read_16_zpg(uint16 addr);
     void mem_write(uint16 addr, uint8 val);
     void mem_write_16(uint16 addr, uint8 val);
     
@@ -70,8 +71,6 @@ private:
     uint16 s_pull_16();
     void s_push(uint8 val);
     void s_push_16(uint16 val);
-
-    void branch(uint8 offset);
     
 public:
     CPU(IMemory& mem);

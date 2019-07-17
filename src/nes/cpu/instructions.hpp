@@ -10,7 +10,7 @@
 #include <assert.h>
 #include "../../util/util.h"
 
-namespace Instrcutions{
+namespace Instructions{
     namespace Instr{
         enum Instr{
             INVALID,
