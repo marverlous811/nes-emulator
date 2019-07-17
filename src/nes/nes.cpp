@@ -11,7 +11,7 @@
 #include "../util/fakeMemory.h"
 
 int startNes(char* path){
-    std::ifstream rom_file(path);
+    std::ifstream rom_file(path, std::ios::binary);
     if(!rom_file.is_open()){
         std::cerr << "could not open '" << path << "'\n";
         return -1;

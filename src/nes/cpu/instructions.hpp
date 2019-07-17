@@ -13,6 +13,7 @@
 namespace Instrcutions{
     namespace Instr{
         enum Instr{
+            INVALID,
             ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI,
             BNE, BPL, BRK, BVC, BVS, CLC, CLD, CLI,
             CLV, CMP, CPX, CPY, DEC, DEX, DEY, EOR,
@@ -20,13 +21,12 @@ namespace Instrcutions{
             LSR, NOP, ORA, PHA, PHP, PLA, PLP, ROL,
             ROR, RTI, RTS, SBC, SEC, SED, SEI, STA,
             STX, STY, TAX, TAY, TSX, TXA, TXS, TYA,
-
-            INVALID
         };
     }
 
     namespace AddrM{
         enum AddrM{
+            INVALID,
             abs_, absX, absY, // Absolute (Indexed)
             ind_, indY, Xind, // Indirect (Indexed)
             zpg_, zpgX, zpgY, // Zero Page (Indexed)
@@ -34,8 +34,6 @@ namespace Instrcutions{
             imm,  // Immediate
             impl, // Implied
             rel,  // Relative
-
-            INVALID
         };
     }
 
@@ -61,15 +59,16 @@ namespace Instrcutions{
 #define DEFN_OPCODE_PG_CROSS(opcode, instr, addrm, cycles, page_cross) \
     { Instr::instr , AddrM::addrm , cycles , true , #instr, #addrm }
 
+#define EXPAND( x ) x
 #define GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME
-#define O(...) GET_MACRO(__VA_ARGS__, \
+#define O(...) EXPAND(GET_MACRO(__VA_ARGS__, \
     /* Use different macros based on # of arguments */ \
     /* 5 */ DEFN_OPCODE_PG_CROSS, \
     /* 4 */ DEFN_OPCODE, \
     /* 3 */ ,\
     /* 2 */ ,\
     /* 1 */ DEFN_UNIMPL \
-)(__VA_ARGS__)
+)(__VA_ARGS__))
 
     //Main Opcode lookup table
     static constexpr Opcode Opcodes[256] = {

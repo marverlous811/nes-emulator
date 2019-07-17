@@ -6,8 +6,8 @@
   - [x] Parse iNES files
   - [x] Create Cartridges (iNES + Mapper interface)
   - [ ] CPU
-    - [ ] Set Up Memory Map
-    - [ ] Core Loop / Basic Functionality
+    - [x] Set Up Memory Map
+    - [x] Core Loop / Basic Functionality
       - Read / Write RAM
       - Addressing Modes
       - Fetch - Decode - Execute
