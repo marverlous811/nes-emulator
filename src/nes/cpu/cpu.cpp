@@ -108,7 +108,8 @@ uint16 CPU::get_operand_addr(Instructions::Opcode &opcode) {
         M(acc , 0, this->reg.a)
         M(impl, 0, uint8 (0xFACA11))
         case INVALID:
-            fprintf(stderr, "Invalid Addressing Mode!\n");
+            fprintf(stderr, "Invalid Addressing Mode! Double check table!\\n\n");
+            fprintf(stderr, "%02X\n", this->mem.peek(0x02));
             exit(-1);
             break;
     }
@@ -118,22 +119,43 @@ uint16 CPU::get_operand_addr(Instructions::Opcode &opcode) {
 #undef read_argV
     //Check to see if we need to add extra cycles due to crossing pages
     if(opcode.check_pg_cross == true){
-        // We know a page boundary was crossed when the calculated addr was of the
-        // form $xxFF, since trying to read a 16 bit address from memory at that
-        // address would cross into the next page (eg: $12FF -> $1300 crosses pages)
-        if((argA & 0xFF) == 0xFF){
-            this->cycles += 1;
+        if(opcode.instr == Instructions::Instr::LDA && opcode.addrm == indY){
+            if(this->mem.peek(argV) + this->reg.y > 0xFF){
+                this->cycles += 1;
+            }
+        }
+        else if((opcode.instr == Instructions::Instr::LDA || opcode.instr == Instructions::Instr::LDX) && opcode.addrm == absY){
+            if((argA & 0xFF00) != ((argA + this->reg.y) & 0xFF00)){
+                this->cycles += 1;
+            }
+        }
+        else{
+            // We know a page boundary was crossed when the calculated addr was of the
+            // form $xxFF, since trying to read a 16 bit address from memory at that
+            // address would cross into the next page (eg: $12FF -> $1300 crosses pages)
+            if((argA & 0xFF) == 0xFF){
+                this->cycles += 1;
+            }
         }
     }
 
     // ... NESTEST DEBUG ... //
 #define NESPRINTF(...) sprintf(nestest_buf, __VA_ARGS__); break;
     switch(opcode.addrm) {
-        case abs_: NESPRINTF("$%04X", argA);
-        case absX: NESPRINTF(" ");
-        case absY: NESPRINTF(" ");
-        case ind_: NESPRINTF(" ");
-        case indY: NESPRINTF(" ");
+        case abs_: NESPRINTF("$%04X = %02X", argA, this->mem.peek(argA));
+        case absX: NESPRINTF("$%04X,X @ %04X = %02X", argA, uint16(argA + this->reg.x), this->mem.peek(argA + this->reg.x));
+        case absY: NESPRINTF("$%04X,Y @ %04X = %02X", argA, uint16(argA + this->reg.y), this->mem.peek(argA + this->reg.y));
+        case ind_: NESPRINTF("($%04X) = %04X", argA, retval);
+        case indY: {
+            uint16 ADDR_2 = this->mem.peek(argV)
+                         + (this->mem.peek((argV & 0xFF00) | (argV + 1 & 0x00FF)) << 8);
+            NESPRINTF("($%02X),Y = %04X @ %04X = %02X",
+                      this->mem.peek(this->reg.pc - 1),
+                      ADDR_2,
+                      uint16(ADDR_2 + this->reg.y),
+                      this->mem.peek(ADDR_2 + this->reg.y)
+            );
+        }
         case Xind: {
             uint8 ADDR_1 = this->reg.x + this->mem.peek(this->reg.pc - 1);
             uint16 ADDR_2 = this->mem.peek(ADDR_1)
@@ -146,8 +168,8 @@ uint16 CPU::get_operand_addr(Instructions::Opcode &opcode) {
             );
         }
         case zpg_: NESPRINTF("$%02X = %02X", argV, this->mem.peek(argV));
-        case zpgX: NESPRINTF("($%02X,X)", argV);
-        case zpgY: NESPRINTF("($%02X),Y", argV);
+        case zpgX: NESPRINTF("$%02X,X @ %02X = %02X", argV, uint8(argV + this->reg.x), this->mem.peek(uint8(argV + this->reg.x)));
+        case zpgY: NESPRINTF("$%02X,Y @ %02X = %02X", argV, uint8(argV + this->reg.y), this->mem.peek(uint8(argV + this->reg.y)));
         case rel : NESPRINTF("$%04X", this->reg.pc + int8(this->mem.peek(this->reg.pc - 1)));
         case imm : NESPRINTF("#$%02X", this->mem.peek(this->reg.pc - 1));
         case acc : NESPRINTF(" ");
@@ -210,25 +232,24 @@ uint8 CPU::step(){
     switch (opcode.instr){
         case JMP: {
             this->reg.pc = addr;
+            if (opcode.addrm == abs_) {
+                sprintf(nestest_buf, "$%04X", addr);
+            }
         } break;
         case LDX: {
             this->reg.x = this->mem_read(addr);
-            // ... NESTEST DEBUG ... //
-            if (opcode.addrm == abs_) {
-                sprintf(nestest_buf, "$%04X = %02X", addr, this->mem.peek(addr));
-            }
             set_zn(this->reg.x);
         } break;
         case STX: {
-            // ... NESTEST DEBUG ... //
-            if (opcode.addrm == abs_) {
-                sprintf(nestest_buf, "$%04X = %02X", addr, this->mem.peek(addr));
-            }
             this->mem_write(addr, this->reg.x);
         } break;
         case JSR: {
             this->s_push_16(this->reg.pc - 1);
             this->reg.pc = addr;
+            // ... NESTEST DEBUG ... //
+            if (opcode.addrm == abs_) {
+                sprintf(nestest_buf, "$%04X", addr);
+            }
         } break;
         case NOP: {
             //me irl
@@ -248,10 +269,6 @@ uint8 CPU::step(){
         case LDA: {
             this->reg.a = this->mem_read(addr);
             set_zn(this->reg.a);
-            // ... NESTEST DEBUG ... //
-            if (opcode.addrm == abs_) {
-                sprintf(nestest_buf, "$%04X = %02X", addr, this->mem.peek(addr));
-            }
         } break;
         case BEQ: {
             branch(this->reg.p.z);
@@ -260,10 +277,6 @@ uint8 CPU::step(){
             branch(!this->reg.p.z);
         } break;
         case STA: {
-            // ... NESTEST DEBUG ... //
-            if (opcode.addrm == abs_) {
-                sprintf(nestest_buf, "$%04X = %02X", addr, this->mem.peek(addr));
-            }
             this->mem_write(addr, this->reg.a);
         } break;
         case BIT: {
@@ -486,6 +499,18 @@ uint8 CPU::step(){
                 this->mem_write(addr, val);
             }
         } break;
+        case INC: {
+            uint8 val = this->mem_read(addr);
+            val++;
+            set_zn(val);
+            this->mem_write(addr, val);
+        } break;
+        case DEC: {
+            uint8 val = this->mem_read(addr);
+            val--;
+            set_zn(val);
+            this->mem_write(addr, val);
+        };
         default: fprintf(stderr, "Unimplemented Instruction!\n"); exit(-1);
     }
 
