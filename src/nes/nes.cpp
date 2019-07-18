@@ -83,14 +83,12 @@ int startNes(char* path){
     uint8* pixelBuff = new uint8[RES_X * RES_Y * 4];
 
     //Frame Counting
-    const time_ms start_time = SDL_GetTicks();
-    time_ms frame_start_time;
-    time_ms frame_end_time;
     uint32 total_frames = 0;
 
     bool quit = false;
     while (!quit){
         time_ms frame_start_time = SDL_GetTicks();
+        total_frames++;
 
         while (SDL_PollEvent(&event) != 0){
             if(event.type == SDL_QUIT){
@@ -101,7 +99,7 @@ int startNes(char* path){
         // TODO: ADD Frame Limiting
         nes->step_frame();
         if(nes->isRunning() == false){
-            quit = true;
+//            quit = true;
             break;
         }
 
@@ -147,22 +145,30 @@ int startNes(char* path){
         SDL_RenderPresent(renderer);
 
         /**
+        * Limit framerate
+        */
+        constexpr time_ms TARGET_FPS = 1000.0 / 60.0;
+        time_ms  frame_dt = SDL_GetTicks() - frame_start_time;
+        if(frame_dt < TARGET_FPS){
+            SDL_Delay(TARGET_FPS - frame_dt);
+        }
+        time_ms frame_end_time = SDL_GetTicks();
+
+        /**
          * Count framerate
          */
-         total_frames++;
-         float total_dt = frame_end_time - start_time;
-         float fps = total_frames / (total_dt / 1000.0);
-         sprintf(window_title, "nes - %d fps", int(fps));
-         SDL_SetWindowTitle(window, window_title);
+         static float past_fps[20] = {60.0};
 
-         /**
-          * Limit framerate
-          */
-          constexpr time_ms TARGET_FPS = 1000.0 / 60.0;
-          time_ms  frame_dt = frame_end_time - frame_start_time;
-          if(frame_dt < TARGET_FPS){
-            SDL_Delay(TARGET_FPS - frame_dt);
-          }
+         //Get current FPS
+         past_fps[total_frames % 20] = 1000.0 / (frame_end_time - frame_start_time);
+
+         float avg_fps = 0;
+         for (unsigned i = 0; i < 20; i++)
+            avg_fps += past_fps[i];
+         avg_fps /= 20;
+
+         sprintf(window_title, "nes - %d fups", int(avg_fps));
+         SDL_SetWindowTitle(window, window_title);
     }
 
     SDL_DestroyRenderer(renderer);
@@ -237,6 +243,7 @@ void Nes::reset(){
 }
 
 void Nes::step_frame(){
+    if (this->is_running == false) return;
     // We need to run this thing until the PPU has a full frame ready to spit out
     // Once the PPU is implemented, I will add a boolean to the return value of
     // the PPU step method, and I will use that to determine when to break out of
@@ -248,7 +255,7 @@ void Nes::step_frame(){
     // - Each scanline lasts for 341 PPU clock cycles
     // - 1 CPU cycle = 3 PPU cycles
 
-    constexpr uint32 CPU_CYCLES_PER_FRAME = 262 * 341 / 3;
+//    constexpr uint32 CPU_CYCLES_PER_FRAME = 262 * 341 / 3;
     uint8 cpu_cycles = this->cpu->step();
     if(this->cpu->getState() == CPU::State::Halted){
         this->is_running = false;

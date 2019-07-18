@@ -415,7 +415,10 @@ uint8 CPU::step(){
             set_zn(val);
             this->mem_write(addr, val);
         };
-        default: fprintf(stderr, "Unimplemented Instruction!\n"); exit(-1);
+        default:
+            fprintf(stderr, "Unimplemented Instruction!\n");
+            this->state = CPU::State::Halted;
+            break;
     }
 
     this->cycles += opcode.cycles;
