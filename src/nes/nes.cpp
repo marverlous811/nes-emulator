@@ -11,6 +11,8 @@
 #include "../util/fakeMemory.h"
 #include <SDL2/SDL.h>
 
+typedef uint32 time_ms;
+
 int startNes(char* path){
     std::ifstream rom_file(path, std::ios::binary);
     if(!rom_file.is_open()){
@@ -49,32 +51,47 @@ int startNes(char* path){
      SDL_Renderer *renderer;
      SDL_Window *window;
 
-     int window_w = 256 * 2;
-     int window_h = 240 * 2;
+     constexpr uint32 RES_X = 256;
+     constexpr uint32 RES_Y = 240;
+     constexpr  float RATIO_XY = float(RES_X) / float(RES_Y);
+     constexpr  float RATIO_YX = float(RES_Y) / float(RES_X);
+
+     int window_w = RES_X * 2;
+     int window_h = RES_Y * 2;
+     char window_title [64] = "nes_emulator";
+
+
 
      SDL_Init(SDL_INIT_EVERYTHING);
      window = SDL_CreateWindow(
-        "nes_emulator",
+        window_title,
         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         window_w, window_h,
         SDL_WINDOW_RESIZABLE
     );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    //nes screen texture
-    const unsigned int textWidth = 256;
-    const unsigned int textHeight = 240;
     SDL_Texture* texture = SDL_CreateTexture(
         renderer,
         SDL_PIXELFORMAT_ABGR8888,
         SDL_TEXTUREACCESS_STREAMING,
-        textWidth, textHeight
+        RES_X, RES_Y
     );
     SDL_Rect screen;
-    uint8* pixelBuff = new uint8[textWidth * textHeight * 4];
+
+    // Main NES pixelbuffer
+    uint8* pixelBuff = new uint8[RES_X * RES_Y * 4];
+
+    //Frame Counting
+    const time_ms start_time = SDL_GetTicks();
+    time_ms frame_start_time;
+    time_ms frame_end_time;
+    uint32 total_frames = 0;
 
     bool quit = false;
     while (!quit){
+        time_ms frame_start_time = SDL_GetTicks();
+
         while (SDL_PollEvent(&event) != 0){
             if(event.type == SDL_QUIT){
                 quit = true;
@@ -82,7 +99,7 @@ int startNes(char* path){
         }
 
         // TODO: ADD Frame Limiting
-        nes->step();
+        nes->step_frame();
         if(nes->isRunning() == false){
             quit = true;
             break;
@@ -91,19 +108,16 @@ int startNes(char* path){
         //output
         SDL_GetWindowSize(window, &window_w, &window_h);
 
-        float skew_w = window_w / 256.0;
-        float skew_h = window_h / 240.0;
-
-        if(skew_w > skew_h){
+        if (window_w / float(RES_X) > window_h / float(RES_Y)) {
             // i.e: fat window
             screen.h = window_h;
-            screen.w = window_h * (256.0 / 240.0);
+            screen.w = window_h * RATIO_XY;
             screen.x = -(screen.w - window_w) / 2;
             screen.y = 0;
         }
         else{
             // i.e: tall window
-            screen.h = window_w * (240.0 / 256.0);
+            screen.h = window_w * RATIO_YX;
             screen.w = window_w;
             screen.x = 0;
             screen.y = -(screen.h - window_h) / 2;
@@ -112,12 +126,12 @@ int startNes(char* path){
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
 
-        for(int x = 0; x < textWidth; x++){
-            for(int y = 0; y < textHeight; y++){
-                const unsigned int offset = (textWidth * 4 * y) + x * 4;
+        for(int x = 0; x < RES_X; x++){
+            for(int y = 0; y < RES_Y; y++){
+                const unsigned int offset = (RES_X * 4 * y) + x * 4;
                 pixelBuff[offset + 0] = (sin((SDL_GetTicks()/ 1000.0)) + 1) * 126; //b
-                pixelBuff[offset + 1] = (float(y) / textHeight) * 256; // g
-                pixelBuff[offset + 2] = (float(x) / textWidth)  * 256; // r
+                pixelBuff[offset + 1] = (float(y) / float(RES_Y)) * RES_X; // g
+                pixelBuff[offset + 2] = (float(x) / float(RES_X)) * RES_X; // r
                 pixelBuff[offset + 3] = SDL_ALPHA_OPAQUE;             // a
             }
         }
@@ -126,11 +140,29 @@ int startNes(char* path){
             texture,
             nullptr,
             &pixelBuff[0],
-            textWidth * 4
+            RES_X * 4
         );
 
         SDL_RenderCopy(renderer, texture, nullptr, &screen);
         SDL_RenderPresent(renderer);
+
+        /**
+         * Count framerate
+         */
+         total_frames++;
+         float total_dt = frame_end_time - start_time;
+         float fps = total_frames / (total_dt / 1000.0);
+         sprintf(window_title, "nes - %d fps", int(fps));
+         SDL_SetWindowTitle(window, window_title);
+
+         /**
+          * Limit framerate
+          */
+          constexpr time_ms TARGET_FPS = 1000.0 / 60.0;
+          time_ms  frame_dt = frame_end_time - frame_start_time;
+          if(frame_dt < TARGET_FPS){
+            SDL_Delay(TARGET_FPS - frame_dt);
+          }
     }
 
     SDL_DestroyRenderer(renderer);
@@ -160,6 +192,7 @@ Nes::Nes(){
     this->cpu = new CPU(*this->cpu_mmu);
     
     this->is_running = false;
+    this->clock_cycles = 0;
 }
 
 Nes::~Nes(){
@@ -203,9 +236,23 @@ void Nes::reset(){
     this->cpu->reset();
 }
 
-void Nes::step(){
+void Nes::step_frame(){
+    // We need to run this thing until the PPU has a full frame ready to spit out
+    // Once the PPU is implemented, I will add a boolean to the return value of
+    // the PPU step method, and I will use that to determine when to break out of
+    // the loop.
+
+    // Right now though, i'm going to be a bum and just run the CPU for the
+    // equivalent ammount of time :P
+    // - PPU renders 262 scanlines per frame
+    // - Each scanline lasts for 341 PPU clock cycles
+    // - 1 CPU cycle = 3 PPU cycles
+
+    constexpr uint32 CPU_CYCLES_PER_FRAME = 262 * 341 / 3;
     uint8 cpu_cycles = this->cpu->step();
     if(this->cpu->getState() == CPU::State::Halted){
         this->is_running = false;
     }
+
+    this->clock_cycles += cpu_cycles * 3;
 }

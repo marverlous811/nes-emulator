@@ -35,6 +35,7 @@ private:
     
     /*-----------------  Flags  -----------------*/
     bool is_running;
+    uint32 clock_cycles;
     
 public:
     Nes();
@@ -47,7 +48,7 @@ public:
     void start();        // start execution
     void stop();         // stop execution
     
-    void step();         // Step processors
+    void step_frame();         // Step processors
     
     bool isRunning() const;
 };
