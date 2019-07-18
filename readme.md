@@ -8,11 +8,11 @@
   - [ ] CPU
     - [x] Set Up Memory Map
     - [x] Core Loop / Basic Functionality
-      - Read / Write RAM
-      - Addressing Modes
-      - Fetch - Decode - Execute
+      - [x] Read / Write RAM
+      - [x] Addressing Modes
+      - [x] Fetch - Decode - Execute
     - [x] Official Opcodes Implemented
-    - [ ] Handle Interrupts
+    - [x] Handle Interrupts
     - [ ] Unofficial Opcodes Implemented (?)
   - [ ] PPU
     - [ ] Set Up Memory Map
@@ -21,6 +21,11 @@
     - TBD
 
  - Ongoing Tasks
+  - Pass more test
+    - CPU
+      - [ ] Implement Unoffical Opcodes (?)
+      - [ ] Better handling of simultaneous interrupts
+      - [ ] _\(Stretch\)_ Switch to cycle-based emulation (vs instruction level)
   - Better error handling (something like Result in Rust)
     - [ ] Remove asserts
   - Implement more Mappers
@@ -31,3 +36,12 @@
     - [ ] 004
     - [ ] 005
     - [ ] 006
+   - Fun Bonuses
+     - [ ] Debugger!
+       - [ ] CPU
+         - [ ] Serialize state
+         - [ ] Step through instructions
+       - [ ] PPU
+         - TBD
+       - [ ] Write a NES rom to simulate TV static, and have that run if no ROM is chosen
+       - [ ] LibRetro support

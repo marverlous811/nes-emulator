@@ -22,6 +22,14 @@ public:
         Running,
         Halted
     };
+
+    enum class Interrupt{
+        None,
+        NMI,
+        IRQ,
+        Reset
+    };
+
 private:
 /*----------  Hardware  ----------*/
     IMemory& mem;
@@ -50,7 +58,8 @@ private:
         uint8 x; //Index X
         uint8 y; //Index Y
     } reg;
-    
+
+    Interrupt  pending_interrput;
 /*----------  Emulation Vars  ----------*/
     uint64 cycles; //Cycles elapsed
     State state;   //CPU state
@@ -58,6 +67,7 @@ private:
 /*--------------  Helpers  -------------*/
     //fetch arguments for current instruction
     uint16 get_operand_addr(const Instructions::Opcode& opcode);
+    void service_interrupt(Interrupt type);
     
     //Push/pop stack
     uint8 s_pull();
@@ -78,9 +88,11 @@ public:
     void init_next();
     void power_cycle();
     void reset();
-    
+
+    void request_interrupt(Interrupt type);
+
     CPU::State getState() const;
-    uint8 step();
+    uint8 step(); // exec instruction, and return cycles taken
 };
 
 #endif /* cpu_hpp */
