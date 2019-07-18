@@ -16,8 +16,6 @@
 class Mapper : public IMemory{
 protected:
     const INES& rom_file;
-    const uint8* lo_rom;
-    const uint8* hi_rom;
     
 public:
     Mapper(const INES& rom_file) : rom_file(rom_file) {};

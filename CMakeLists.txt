@@ -22,11 +22,12 @@ include_directories(${SDL2_INCLUDE_DIR})
 
 include_directories(src)
 file(GLOB_RECURSE NES src/nes/*.cpp src/nes/*.hpp)
+file(GLOB_RECURSE util src/util/*cpp src/util/*.h src/util/*.hpp)
 
 SET(TEST src/test/cpuTest.cpp)
 
-ADD_EXECUTABLE(nes_emulator src/main.cpp ${NES})
-ADD_EXECUTABLE(test ${TEST} ${NES})
+ADD_EXECUTABLE(nes_emulator src/main.cpp ${NES} ${util})
+ADD_EXECUTABLE(test ${TEST} ${NES} ${util})
 
 target_link_libraries(nes_emulator ${SDL2_LIBRARY})
 install(TARGETS nes_emulator RUNTIME DESTINATION ${BIN_DIR})

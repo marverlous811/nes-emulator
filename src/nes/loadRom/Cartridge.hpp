@@ -13,6 +13,7 @@
 #include "../../util/memory.h"
 #include "INes.hpp"
 #include "../mapper/mapper.hpp"
+#include "../ppu/ppu.hpp"
 
 class Cartridge final : public IMemory{
 private:
@@ -27,6 +28,10 @@ public:
     void write(uint16 addr, uint8 val) override;
     
     bool is_valid() const;
+    PPU::Mirroring  mirroring() const; //get nametable mirroring type
+
+    //Critical importance
+    void blowOnContacts() const;
 };
 
 #endif /* Cartridge_hpp */

@@ -12,7 +12,6 @@
 #include "../../util/util.h"
 #include "../../util/memory.h"
 #include "../loadRom/Cartridge.hpp"
-#include "./ram.hpp"
 
 // CPU Memory Map (MMU)
 // NESdoc.pdf
@@ -28,7 +27,7 @@ private:
     IMemory& joy;
     
     // ROM is subject to change
-    IMemory* rom;
+    Cartridge* rom;
 public:
     CPU_MMU(
             IMemory& ram,
@@ -36,14 +35,14 @@ public:
             IMemory& apu,
             IMemory& dma,
             IMemory& joy,
-            IMemory* rom
+            Cartridge* rom
             );
 
     uint8 peek(uint16 addr) const override ;
     uint8 read(uint16 addr) override;
     void write(uint16 addr, uint8 val) override;
     
-    void addCartridge(IMemory* cart);
+    void addCartridge(Cartridge* cart);
     void removeCartridge();
 };
 

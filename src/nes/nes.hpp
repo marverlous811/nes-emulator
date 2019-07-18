@@ -25,8 +25,10 @@ private:
     //CPU
     CPU *cpu;
     //RAM
-    Ram *cpu_ram;
-    //RAM ppu_ram
+    Ram* cpu_ram;   //2k CPU general purpose RAM
+    Ram* ppu_pram;  //32 bytes PPU palette RAM
+    Ram* ppu_ciram; //2k PPU nametable VRAM
+
     //JOY joy
     //CPU MMU
     CPU_MMU *cpu_mmu;

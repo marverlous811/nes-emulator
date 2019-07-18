@@ -14,7 +14,7 @@ CPU_MMU::CPU_MMU(
                  IMemory& apu,
                  IMemory& dma,
                  IMemory& joy,
-                 IMemory* rom
+                 Cartridge* rom
                  ): ram(ram), ppu(ppu), apu(apu), dma(dma), joy(joy), rom(rom)
 {}
 
@@ -68,7 +68,7 @@ void CPU_MMU::write(uint16 addr, uint8 val){
     return void();
 }
 
-void CPU_MMU::addCartridge(IMemory *cart){
+void CPU_MMU::addCartridge(Cartridge *cart){
     this->rom = cart;
 }
 

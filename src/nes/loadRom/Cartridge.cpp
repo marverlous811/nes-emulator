@@ -7,6 +7,7 @@
 //
 
 #include "Cartridge.hpp"
+#include "INes.hpp"
 
 Cartridge::Cartridge(const uint8* data, uint32 data_len){
     this->rom_data = new INES(data, data_len);
@@ -32,4 +33,12 @@ void Cartridge::write(uint16 addr, uint8 val){
 
 bool Cartridge::is_valid() const{
     return this->rom_data->is_valid && this->mapper != nullptr;
+}
+
+PPU::Mirroring Cartridge::mirroring() const {
+    return this->rom_data->flags.mirror_type;
+}
+
+void Cartridge::blowOnContacts() const {
+
 }

@@ -21,9 +21,9 @@ private:
     VoidMemory() = default;
     
 public:
-    uint8 peek(uint16 addr) const override  { return 0; }
-    uint8 read(uint16 addr) override { return 0; }
-    void write(uint16 addr, uint8 val) override {}
+    uint8 peek(uint16 addr) const override  { (void) addr; return 0; }
+    uint8 read(uint16 addr) override { (void)addr; return 0; }
+    void write(uint16 addr, uint8 val) override { (void) addr; (void) val;}
     
     static VoidMemory* Get() {
         static VoidMemory the_void;

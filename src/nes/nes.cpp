@@ -183,15 +183,17 @@ Nes::Nes(){
     this->cart = nullptr;
     // Init RAM modules
     this->cpu_ram = new Ram(0x800);
+    this->ppu_pram = new Ram(32);
+    this->ppu_ciram = new Ram(0x800);
     
     // Init MMUs
     this->cpu_mmu = new CPU_MMU(
-        *this->cpu_ram,
-        *VoidMemory::Get(),
-        *VoidMemory::Get(),
-        *VoidMemory::Get(),
-        *VoidMemory::Get(),
-        this->cart
+        /* ram */ *this->cpu_ram,
+        /* ppu */ *VoidMemory::Get(),
+        /* apu */ *VoidMemory::Get(),
+        /* dma */ *VoidMemory::Get(),
+        /* joy */ *VoidMemory::Get(),
+        /* rom */ this->cart
     );
     
     //create processor
@@ -205,6 +207,8 @@ Nes::~Nes(){
     delete this->cpu;
     delete this->cpu_mmu;
     delete this->cpu_ram;
+    delete this->ppu_pram;
+    delete this->ppu_ciram;
 }
 
 bool Nes::loadCartridge(Cartridge *cart){
