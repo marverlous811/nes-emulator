@@ -9,6 +9,7 @@
 #include <fstream>
 #include "nes.hpp"
 #include "../util/fakeMemory.h"
+#include <SDL2/SDL.h>
 
 int startNes(char* path){
     std::ifstream rom_file(path, std::ios::binary);
@@ -38,14 +39,60 @@ int startNes(char* path){
     Nes* nes = new Nes();
     bool res = nes->loadCartridge(rom_cart);
     std::cout<<"ines load cartidge: "<<res<<std::endl;
-    nes->start();
 
-    while (true) {
+    nes->power_cycle();
+
+    /*
+     * Define SDL need to be moved out of main
+     */
+     SDL_Event event;
+     SDL_Renderer *renderer;
+     SDL_Window *window;
+
+     int window_w = 640;
+     int window_h = 480;
+
+     SDL_Init(SDL_INIT_VIDEO);
+     window = SDL_CreateWindow(
+        "nes_emulator",
+        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        window_w, window_h,
+        SDL_WINDOW_RESIZABLE
+    );
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+
+    bool quit = false;
+    while (!quit){
+        while (SDL_PollEvent(&event) != 0){
+            if(event.type == SDL_QUIT){
+                quit = true;
+            }
+        }
+
+        // TODO: ADD Frame Limiting
         nes->step();
         if(nes->isRunning() == false){
+            quit = true;
             break;
         }
+
+        //output
+        SDL_GetWindowSize(window, &window_w, &window_h);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_RenderClear(renderer);
+        for (float x = 0; x < window_w; x++) {
+            for (float y = 0; y < window_h; y++) {
+                SDL_SetRenderDrawColor(renderer, (x / window_w) * 255, (y / window_h) * 255, 0, 255);
+                SDL_RenderDrawPoint(renderer, x, y);
+            }
+        }
+
+        SDL_RenderPresent(renderer);
     }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
     delete rom_cart;
     return 0;
