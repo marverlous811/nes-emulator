@@ -38,6 +38,7 @@ namespace Instructions{
     }
 
     struct Opcode {
+        uint8  raw;         //raw opcode byte
         Instr::Instr instr; //Instruction Enum
         AddrM::AddrM addrm; //Addressing Mode Enum
         uint8 cycles;       //base cycles
@@ -48,16 +49,16 @@ namespace Instructions{
     };
 
     //Defines a invalid Opcode
-#define DEFN_UNIMPL(byte) \
-    { Instr::INVALID, AddrM::INVALID, 0 , false, "KIL", "----"}
+#define DEFN_UNIMPL(opcode) \
+    { opcode, Instr::INVALID, AddrM::INVALID, 0 , false, "KIL", "----"}
 
     //Defines a reguar Opcde
 #define DEFN_OPCODE(opcode, instr, addrm, cycles) \
-    { Instr::instr, AddrM::addrm, cycles, false, #instr, #addrm}
+    { opcode, Instr::instr, AddrM::addrm, cycles, false, #instr, #addrm}
 
     // Defines a Opcode that takes 1 extra cycle when reading memory across pages
 #define DEFN_OPCODE_PG_CROSS(opcode, instr, addrm, cycles, page_cross) \
-    { Instr::instr , AddrM::addrm , cycles , true , #instr, #addrm }
+    { opcode, Instr::instr , AddrM::addrm , cycles , true , #instr, #addrm }
 
 #define EXPAND( x ) x
 #define GET_MACRO(_1, _2, _3, _4, _5, NAME, ...) NAME

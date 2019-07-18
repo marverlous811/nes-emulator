@@ -57,7 +57,7 @@ private:
     
 /*--------------  Helpers  -------------*/
     //fetch arguments for current instruction
-    uint16 get_operand_addr(Instructions::Opcode& opcode);
+    uint16 get_operand_addr(const Instructions::Opcode& opcode);
 
     //read write mem
     uint8 mem_read (uint16 addr);
@@ -71,6 +71,12 @@ private:
     uint16 s_pull_16();
     void s_push(uint8 val);
     void s_push_16(uint16 val);
+
+    /**
+     * Testing
+     */
+     //print nestest golden-log formatted CPU log data
+     void nestest(const Instructions::Opcode& opcode) const;
     
 public:
     CPU(IMemory& mem);
