@@ -12,6 +12,15 @@
 Cartridge::Cartridge(const uint8* data, uint32 data_len){
     this->rom_data = new INES(data, data_len);
     this->mapper = Mapper::Factory(*this->rom_data);
+    if (this->rom_data->flags.has_4screen) {
+        this->mirroring_type = Cartridge::Mirroring::FourScreen;
+    }
+    else if (this->rom_data->flags.mirror_type == 0) {
+        this->mirroring_type = Cartridge::Mirroring::Vertical;
+    }
+    else /* (this->rom_data->flags.mirror_type == 1) */ {
+        this->mirroring_type = Cartridge::Mirroring::Horizontal;
+    }
 }
 
 Cartridge::~Cartridge(){
@@ -35,8 +44,8 @@ bool Cartridge::is_valid() const{
     return this->rom_data->is_valid && this->mapper != nullptr;
 }
 
-PPU::Mirroring Cartridge::mirroring() const {
-    return this->rom_data->flags.mirror_type;
+Cartridge::Mirroring Cartridge::mirroring() const {
+    return this->mirroring_type;
 }
 
 void Cartridge::blowOnContacts() const {

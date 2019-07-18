@@ -10,9 +10,7 @@
 #define INes_hpp
 
 #include "../../util/rom.hpp"
-#include "../ppu/ppu.hpp"
 #include "../../util/util.h"
-#include <vector>
 
 // iNES file container
 // https://wiki.nesdev.com/w/index.php/INES
@@ -27,8 +25,8 @@ public:
     
     //ROM
     struct{
-        std::vector<ROM*> prg_rom; //start of pro_rom bank (16k for each)
-        std::vector<ROM*> chr_rom; //start of chr_rom bank (8k for each)
+        ROM** prg_rom; //start of pro_rom bank (16k for each)
+        ROM** chr_rom; //start of chr_rom bank (8k for each)
 
         ROM* trn_rom; //Start of Trainer
         ROM* pci_rom; //start of play choice INST-ROM
@@ -38,8 +36,9 @@ public:
     struct{
         uint8 prg_rom_pages;  //Num 16k program ROM pages
         uint8 chr_rom_pages;  //Num 8k char ROM pages
-        
-        PPU::Mirroring mirror_type;     // 0 = horizontal mirror, 1 = vertical
+
+        bool has_4screen;     // Nametable mirroring is FourScreen
+        bool mirror_type;     // 0 = horizontal mirror, 1 = vertical
         bool has_trainer;     //Has 512 byte trainer at 7000 - 71FFh
         bool has_battery;     //Has battery backed SRAM at 6000 - 7FFF
         

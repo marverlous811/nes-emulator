@@ -7,6 +7,7 @@
 //
 
 #include "cpu_mmu.hpp"
+#include <assert.h>
 
 CPU_MMU::CPU_MMU(
                  IMemory& ram,

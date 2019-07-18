@@ -16,9 +16,16 @@
 #include "../ppu/ppu.hpp"
 
 class Cartridge final : public IMemory{
+public:
+    enum class Mirroring{
+        Vertical,
+        Horizontal,
+        FourScreen
+    };
 private:
     const INES* rom_data;
     Mapper* mapper;
+    Mirroring mirroring_type;
 public:
     Cartridge(const uint8* data, uint32 data_length);
     ~Cartridge();
@@ -28,7 +35,7 @@ public:
     void write(uint16 addr, uint8 val) override;
     
     bool is_valid() const;
-    PPU::Mirroring  mirroring() const; //get nametable mirroring type
+    Mirroring  mirroring() const; //get nametable mirroring type
 
     //Critical importance
     void blowOnContacts() const;

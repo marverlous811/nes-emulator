@@ -10,12 +10,6 @@
 #include "../../util/memory.h"
 
 class PPU {
-public:
-    enum class Mirroring{
-        Vertical,
-        Horizontal,
-        FourScreen
-    };
 private:
     IMemory& mem;
 public:
