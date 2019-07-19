@@ -14,20 +14,21 @@
 #include "./memory.h"
 
 // Void Memory Singleton
-// Returns 0 on read
+// Returns 0x00 on read
 // No effect on write
 class VoidMemory : public IMemory{
 private:
     VoidMemory() = default;
     
 public:
-    uint8 peek(uint16 addr) const override  { (void) addr; return 0; }
-    uint8 read(uint16 addr) override { (void)addr; return 0; }
+    uint8 peek(uint16 addr) const override  { (void) addr; return 0x00; }
+    uint8 read(uint16 addr) override { (void)addr; return 0x00; }
     void write(uint16 addr, uint8 val) override { (void) addr; (void) val;}
     
     static VoidMemory* Get() {
-        static VoidMemory the_void;
-        return &the_void;
+        static VoidMemory* the_void  = nullptr;
+        if(!the_void) the_void = new VoidMemory();
+        return the_void;
     }
 };
 

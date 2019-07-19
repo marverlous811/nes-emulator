@@ -14,7 +14,6 @@
       - [x] Fetch - Decode - Execute
     - [x] Official Opcodes Implemented
     - [x] Handle Interrupts
-    - [ ] Unofficial Opcodes Implemented (?)
   - [ ] PPU
     - [x] Set Up Basic Rendering Context (SDL)
     - [x] Set Up Memory Map
@@ -35,6 +34,8 @@
       - [ ] Implement Unoffical Opcodes (?)
       - [ ] Better handling of simultaneous interrupts
       - [ ] _\(Stretch\)_ Switch to cycle-based emulation (vs instruction level)
+  - PPU
+      - [ ] Make value in PPU <-> CPU bus decay
   - Better error handling (something like Result in Rust)
     - [ ] Remove asserts
   - Cleanup

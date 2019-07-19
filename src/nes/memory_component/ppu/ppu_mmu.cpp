@@ -24,7 +24,7 @@ uint8 PPU_MMU::read(uint16 addr) {
     if (in_range(addr, 0x2000, 0x23FF)) return vram->read(addr - this->nt_0);
     if (in_range(addr, 0x2400, 0x27FF)) return vram->read(addr - this->nt_1);
     if (in_range(addr, 0x2800, 0x2BFF)) return vram->read(addr - this->nt_2);
-    if (in_range(addr, 0x2C00, 0x2EFF)) return vram->read(addr - this->nt_3);
+    if (in_range(addr, 0x2C00, 0x2FFF)) return vram->read(addr - this->nt_3);
     if (in_range(addr, 0x3000, 0x3EFF)) return this->read(addr - 0x1000);
     if (in_range(addr, 0x3F00, 0x3FFF)) return pram.read(addr % 32 + 0x3F00);
     if (in_range(addr, 0x4000, 0xFFFF)) return this->read(addr - 0x4000);
@@ -38,7 +38,7 @@ uint8 PPU_MMU::peek(uint16 addr) const {
     if (in_range(addr, 0x2000, 0x23FF)) return vram->peek(addr - this->nt_0);
     if (in_range(addr, 0x2400, 0x27FF)) return vram->peek(addr - this->nt_1);
     if (in_range(addr, 0x2800, 0x2BFF)) return vram->peek(addr - this->nt_2);
-    if (in_range(addr, 0x2C00, 0x2EFF)) return vram->peek(addr - this->nt_3);
+    if (in_range(addr, 0x2C00, 0x2FFF)) return vram->peek(addr - this->nt_3);
     if (in_range(addr, 0x3000, 0x3EFF)) return this->peek(addr - 0x1000);
     if (in_range(addr, 0x3F00, 0x3FFF)) return pram.peek(addr % 32 + 0x3F00);
     if (in_range(addr, 0x4000, 0xFFFF)) return this->peek(addr - 0x4000);
@@ -52,7 +52,7 @@ void PPU_MMU::write(uint16 addr, uint8 val) {
     if (in_range(addr, 0x2000, 0x23FF)) return vram->write(addr - this->nt_0, val);
     if (in_range(addr, 0x2400, 0x27FF)) return vram->write(addr - this->nt_1, val);
     if (in_range(addr, 0x2800, 0x2BFF)) return vram->write(addr - this->nt_2, val);
-    if (in_range(addr, 0x2C00, 0x2EFF)) return vram->write(addr - this->nt_3, val);
+    if (in_range(addr, 0x2C00, 0x2FFF)) return vram->write(addr - this->nt_3, val);
     if (in_range(addr, 0x3000, 0x3EFF)) return this->write(addr - 0x1000, val);
     if (in_range(addr, 0x3F00, 0x3FFF)) return pram.write(addr % 32 + 0x3F00, val);
     if (in_range(addr, 0x4000, 0xFFFF)) return this->write(addr - 0x4000, val);

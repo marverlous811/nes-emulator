@@ -28,6 +28,7 @@ private:
 public:
     // No Destructor, since no owned resources
     PPU_MMU(IMemory& ciram, IMemory& pram, Cartridge* rom);
+    ~PPU_MMU() = default;
 
     //<Memory>
     uint8 read(uint16 addr) override ;

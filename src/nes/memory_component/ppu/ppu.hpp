@@ -9,6 +9,20 @@
 #include "util/bitfield.h"
 #include "util/memory.h"
 
+namespace PPURegisters{
+    enum Reg{
+        PPUCTRL   = 0x2000,
+        PPUMASK   = 0x2001,
+        PPUSTATUS = 0x2002,
+        OAMADDR   = 0x2003,
+        OAMDATA   = 0x2004,
+        PPUSCROLL = 0x2005,
+        PPUADDR   = 0x2006,
+        PPUDATA   = 0x2007,
+        OAMDMA    = 0x4014,
+    };
+}
+
 // http://wiki.nesdev.com/w/index.php/PPU_programmer_reference
 class PPU final: public IMemory {
 private:
@@ -21,6 +35,10 @@ private:
     IMemory& dma;
     IMemory& oam;       //PPU Object Attribute Memory
 
+    uint8 cpu_data_bus; //PPU <-> CPU data bus
+    bool latch; // Controls which byte to write to in PPUADDR and PPUSCROLL
+                // 0 = write to hi, 1 = write to lo
+
     uint32 cycles;
 
     // current pixel to draw
@@ -30,6 +48,8 @@ private:
     } scan;
 
     struct {
+        uint8 ppudata_read_buffer;
+
         // PPUCTRL   - 0x2000 - PPU control register
         union {
             uint8  raw;
@@ -67,18 +87,15 @@ private:
 
         // PPUSCROLL - 0x2005 - PPU scrolling position register
         struct {
-            bool write_to; // 0 = write to x, 1 = write to y
-            uint8 x;
-            uint8 y;
+            uint16 val; // 0 = write to x, 1 = write to y
+            BitField<8, 8> x;
+            BitField<0, 8> y;
         } ppuscroll;
         // PPUADDR   - 0x2006 - PPU VRAM address register
         struct {
-            bool write_to; // 0 = write to hi, 1 = write to lo
-            union {
-                uint16 val;         //16 bit address
-                BitField<8, 8> hi;  //hi byte of addr
-                BitField<0, 8> lo;  //lo byte of addr
-            } addr;
+            uint16 val;         //16 bit address
+            BitField<8, 8> hi;  //hi byte of addr
+            BitField<0, 8> lo;  //lo byte of addr
         } ppuaddr;
 
         uint8 ppudata;   // PPUDATA   - 0x2007 - PPU VRAM data port

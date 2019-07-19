@@ -28,6 +28,7 @@ private:
     // ROM is subject to change
     Cartridge* rom;
 public:
+    ~CPU_MMU() = default;
     CPU_MMU(
             IMemory& ram,
             IMemory& ppu,
