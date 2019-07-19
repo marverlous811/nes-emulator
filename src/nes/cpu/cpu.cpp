@@ -10,6 +10,8 @@
 #include <cstdio>
 #include <string>
 
+// #define NESTEST
+
 CPU::~CPU(){}
 
 CPU::CPU(IMemory& mem) : mem(mem){
@@ -34,9 +36,11 @@ void CPU::power_cycle(){
     this->pending_interrput = CPU::Interrupt::None;
 
     // >> SET TO 0xC000 to do nestest.rom
-//    this->reg.pc = 0xC000;
-//
-//    this->cycles = 0;
+#ifdef NESTEST
+    this->reg.pc = 0xC000;
+    this->cycles = 0;
+#endif
+
     this->state = CPU::State::Running;
 }
 
@@ -104,8 +108,8 @@ uint16 CPU::get_operand_addr(const Instructions::Opcode &opcode) {
 
     // To keep switch-statement code clean, define some temporary macros that
     // read 8 and 1 bit arguments (respectively)
-#define arg8  (this->mem.read(this->reg.pc++))
-#define arg16 (this->mem.read(this->reg.pc++) | (this->mem.read(this->reg.pc++) << 8))
+#define arg8  (this->mem[this->reg.pc++])
+#define arg16 (this->mem[this->reg.pc++] | (this->mem[this->reg.pc++] << 8))
 
     switch (opcode.addrm){
         case abs_: addr = arg16; break;
@@ -154,11 +158,13 @@ uint8 CPU::step(){
     }
 
     //fetch instruction
-    uint8  op = this->mem.read(this->reg.pc);
+    uint8  op = this->mem[this->reg.pc];
     //Lookup info about opcode
     Instructions::Opcode opcode = Instructions::Opcodes[op];
 
-//    this->nestest(opcode);
+#ifdef NESTEST
+    this->nestest(opcode);
+#endif
     // Depending on what addrm this instruction uses, this will either be a u8
     // or a u16. Thus, we use a u16 to get the value from the fn, and let
     // individual instructions cast it to u8 when they need to.
@@ -190,11 +196,11 @@ uint8 CPU::step(){
             this->reg.pc = addr;
         } break;
         case LDX: {
-            this->reg.x = this->mem.read(addr);
+            this->reg.x = this->mem[addr];
             set_zn(this->reg.x);
         } break;
         case STX: {
-            this->mem.write(addr, this->reg.x);
+            this->mem[addr] = this->reg.x;
         } break;
         case JSR: {
             this->s_push_16(this->reg.pc - 1);
@@ -216,7 +222,7 @@ uint8 CPU::step(){
             branch(!this->reg.p.c)
         } break;
         case LDA: {
-            this->reg.a = this->mem.read(addr);
+            this->reg.a = this->mem[addr];
             set_zn(this->reg.a);
         } break;
         case BEQ: {
@@ -226,10 +232,10 @@ uint8 CPU::step(){
             branch(!this->reg.p.z);
         } break;
         case STA: {
-            this->mem.write(addr, this->reg.a);
+            this->mem[addr] = this->reg.a;
         } break;
         case BIT: {
-            uint8 mem = this->mem.read(addr);
+            uint8 mem = this->mem[addr];
             this->reg.p.z = (this->reg.a & mem) == 0;
             this->reg.p.v = nth_bit(mem, 6);
             this->reg.p.n = nth_bit(mem, 7);
@@ -247,7 +253,7 @@ uint8 CPU::step(){
             this->reg.pc = this->s_pull_16() + 1;
         } break;
         case AND: {
-            this->reg.a &= this->mem.read(addr);
+            this->reg.a &= this->mem[addr];
             set_zn(this->reg.a);
         } break;
         case SEI: {
@@ -264,7 +270,7 @@ uint8 CPU::step(){
             set_zn(this->reg.a);
         } break;
         case CMP: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             this->reg.p.c = this->reg.a >= val;
             set_zn(this->reg.a - val);
         } break;
@@ -281,18 +287,18 @@ uint8 CPU::step(){
             branch(this->reg.p.n);
         } break;
         case ORA: {
-            this->reg.a |= this->mem.read(addr);
+            this->reg.a |= this->mem[addr];
             set_zn(this->reg.a);
         } break;
         case CLV: {
             this->reg.p.v = 0;
         } break;
         case EOR: {
-            this->reg.a ^= this->mem.read(addr);
+            this->reg.a ^= this->mem[addr];
             set_zn(this->reg.a);
         } break;
         case ADC: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             uint16 sum = this->reg.a + ~val + this->reg.p.c;
             this->reg.p.c = sum > 0xFF;
             this->reg.p.z = uint8 (sum) == 0;
@@ -304,7 +310,7 @@ uint8 CPU::step(){
             this->reg.a = uint8(sum);
         } break;
         case SBC: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             uint16 sum = this->reg.a + ~val + !!this->reg.p.c;
             this->reg.p.c = !(sum > 0xFF);
             this->reg.p.z = uint8(sum) == 0;
@@ -316,16 +322,16 @@ uint8 CPU::step(){
             this->reg.a = uint8(sum);
         } break;
         case LDY: {
-            this->reg.y = this->mem.read(addr);
+            this->reg.y = this->mem[addr];
             set_zn(this->reg.y);
         } break;
         case CPY: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             this->reg.p.c = this->reg.y >= val;
             set_zn(this->reg.y - val);
         } break;
         case CPX: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             this->reg.p.c = this->reg.x >= val;
             set_zn(this->reg.x - val);
         } break;
@@ -346,7 +352,7 @@ uint8 CPU::step(){
             set_zn(this->reg.x);
         } break;
         case STY: {
-            this->mem.write(addr, this->reg.y);
+            this->mem[addr] = this->reg.y;
         } break;
         case TAY: {
             this->reg.y = this->reg.a;
@@ -386,11 +392,11 @@ uint8 CPU::step(){
                 this->reg.a >>= 1;
                 set_zn(this->reg.a);
             } else {
-                uint8 val = this->mem.read(addr);
+                uint8 val = this->mem[addr];
                 this->reg.p.c = nth_bit(val, 0);
                 val >>= 1;
                 set_zn(val);
-                this->mem.write(addr, val);
+                this->mem[addr] = val;
             }
         } break;
         case ASL: {
@@ -400,11 +406,11 @@ uint8 CPU::step(){
                 this->reg.a <<= 1;
                 set_zn(this->reg.a);
             } else {
-                uint8 val = this->mem.read(addr);
+                uint8 val = this->mem[addr];
                 this->reg.p.c = nth_bit(val, 7);
                 val <<= 1;
                 set_zn(val);
-                this->mem.write(addr, val);
+                this->mem[addr] = val;
             }
         } break;
         case ROR: {
@@ -417,12 +423,12 @@ uint8 CPU::step(){
                 this->reg.p.c = old_bit_0;
                 set_zn(this->reg.a);
             } else {
-                uint8 val = this->mem.read(addr);
+                uint8 val = this->mem[addr];
                 bool old_bit_0 = nth_bit(val, 0);
                 val = (val >> 1) | (this->reg.p.c << 7);
                 this->reg.p.c = old_bit_0;
                 set_zn(val);
-                this->mem.write(addr, val);
+                this->mem[addr] = val;
             }
         } break;
         case ROL: {
@@ -435,25 +441,25 @@ uint8 CPU::step(){
                 this->reg.p.c = old_bit_0;
                 set_zn(this->reg.a);
             } else {
-                uint8 val = this->mem.read(addr);
+                uint8 val = this->mem[addr];
                 bool old_bit_0 = nth_bit(val, 7);
                 val = (val << 1) | this->reg.p.c;
                 this->reg.p.c = old_bit_0;
                 set_zn(val);
-                this->mem.write(addr, val);
+                this->mem[addr] =  val;
             }
         } break;
         case INC: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             val++;
             set_zn(val);
-            this->mem.write(addr, val);
+            this->mem[addr] = val;
         } break;
         case DEC: {
-            uint8 val = this->mem.read(addr);
+            uint8 val = this->mem[addr];
             val--;
             set_zn(val);
-            this->mem.write(addr, val);
+            this->mem[addr] = val;
         };
         default:
             fprintf(stderr, "[CPU] Unimplemented Instruction!\n");
@@ -467,11 +473,11 @@ uint8 CPU::step(){
 
 /*----------  Helpers  ----------*/
 uint8 CPU::s_pull(){
-    return this->mem.read(0x0100 + ++this->reg.sp);
+    return this->mem[0x0100 + ++this->reg.sp];
 }
 
 void CPU::s_push(uint8 val){
-    this->mem.write(0x0100 + this->reg.sp--, val);
+    this->mem[0x0100 + this->reg.sp--] = val;
 }
 
 uint16 CPU::s_pull_16(){

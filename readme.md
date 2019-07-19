@@ -29,6 +29,13 @@
     - TBD
 
  - Ongoing Tasks
+   - Better Usability
+      - [ ] Menus
+        - [ ] Loading Files
+        - [ ] Run / Pause / Stop
+        - [ ] Remap controls
+      - [ ] Config File
+      - [ ] Running NESTEST (behind a flag)
   - Pass more test
     - CPU
       - [ ] Implement Unoffical Opcodes (?)
@@ -60,3 +67,5 @@
          - TBD
        - [ ] Write a NES rom to simulate TV static, and have that run if no ROM is chosen
        - [ ] LibRetro support
+       - [ ] Proper handling of PAL
+       - [ ] Add support for more ROM formats (not just iNES)

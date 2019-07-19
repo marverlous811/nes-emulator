@@ -26,9 +26,9 @@ void DMA::write(uint16 addr, uint8 page) {
     assert(addr == 0x4014);
     for(uint16 addr = 0; addr <= 256; addr++){
         //read value from CPU WRAM
-        uint8 cpu_val = this->cpu_wram.read((uint16(page) << 8) + addr);
+        uint8 cpu_val = this->cpu_wram[(uint16(page) << 8) + addr];
         //dump it into the PPU OAM
-        this->ppu_oam.write(addr, cpu_val);
+        this->ppu_oam[addr] = cpu_val;
 
     }
 }
