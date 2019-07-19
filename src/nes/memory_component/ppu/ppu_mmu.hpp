@@ -5,9 +5,9 @@
 #ifndef NES_EMULATOR_PPU_MMU_HPP
 #define NES_EMULATOR_PPU_MMU_HPP
 
-#include "../../util/memory.h"
-#include "../../util/util.h"
-#include "../loadRom/Cartridge.hpp"
+#include "util/memory.h"
+#include "util/util.h"
+#include "nes/loadRom/Cartridge.hpp"
 
 class PPU_MMU final: public IMemory{
 private:
