@@ -17,6 +17,11 @@ elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
   endif()
 endif()
 
+option(NESTEST "Move intial PC to 0xC000 for NESTEST" OFF)
+if (NESTEST)
+  add_definitions(-DNESTEST)
+endif()
+
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
