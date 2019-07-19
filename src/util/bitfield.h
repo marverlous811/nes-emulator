@@ -71,7 +71,7 @@ public:
         return *this;
     }
     
-    explicit operator bool() const { return value_ & (Mask << Index); }
+    operator T() const { return value_ & (Mask << Index); }
 private:
     T value_;
 };

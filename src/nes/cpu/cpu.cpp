@@ -34,9 +34,9 @@ void CPU::power_cycle(){
     this->pending_interrput = CPU::Interrupt::None;
 
     // >> SET TO 0xC000 to do nestest.rom
-    this->reg.pc = 0xC000;
-    
-    this->cycles = 0;
+//    this->reg.pc = 0xC000;
+//
+//    this->cycles = 0;
     this->state = CPU::State::Running;
 }
 
@@ -294,7 +294,7 @@ uint8 CPU::step(){
         } break;
         case ADC: {
             uint8 val = this->mem.read(addr);
-            uint16 sum = this->reg.a + val + !!this->reg.p.c;
+            uint16 sum = this->reg.a + ~val + this->reg.p.c;
             this->reg.p.c = sum > 0xFF;
             this->reg.p.z = uint8 (sum) == 0;
             //http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
@@ -414,13 +414,13 @@ uint8 CPU::step(){
                 sprintf(nestest_buf, "A");
 
                 bool old_bit_0 = nth_bit(this->reg.a, 0);
-                this->reg.a = (this->reg.a >> 1) | (!!this->reg.p.c << 7);
+                this->reg.a = (this->reg.a >> 1) | (this->reg.p.c << 7);
                 this->reg.p.c = old_bit_0;
                 set_zn(this->reg.a);
             } else {
                 uint8 val = this->mem.read(addr);
                 bool old_bit_0 = nth_bit(val, 0);
-                val = (val >> 1) | (!!this->reg.p.c << 7);
+                val = (val >> 1) | (this->reg.p.c << 7);
                 this->reg.p.c = old_bit_0;
                 set_zn(val);
                 this->mem.write(addr, val);
@@ -432,13 +432,13 @@ uint8 CPU::step(){
                 sprintf(nestest_buf, "A");
 
                 bool old_bit_0 = nth_bit(this->reg.a, 7);
-                this->reg.a = (this->reg.a << 1) | !!this->reg.p.c;
+                this->reg.a = (this->reg.a << 1) | this->reg.p.c;
                 this->reg.p.c = old_bit_0;
                 set_zn(this->reg.a);
             } else {
                 uint8 val = this->mem.read(addr);
                 bool old_bit_0 = nth_bit(val, 7);
-                val = (val << 1) | !!this->reg.p.c;
+                val = (val << 1) | this->reg.p.c;
                 this->reg.p.c = old_bit_0;
                 set_zn(val);
                 this->mem.write(addr, val);

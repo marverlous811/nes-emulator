@@ -7,7 +7,7 @@
 //
 
 #include "INes.hpp"
-#include <iostream>
+#include <cstdio>
 
 INES::INES(const uint8* data, uint32 data_len) {
     (void)data_len;
@@ -20,13 +20,14 @@ INES::INES(const uint8* data, uint32 data_len) {
     //check that the data is iNes compatible
     this->is_valid = (data[0] == 'N'
                       && data[1] == 'E'
-                      && data[2] == 'S');
+                      && data[2] == 'S'
+                      && data[3] == 0x1A);
     
     if(!this->is_valid) return;
     
     // Parse the rest of the header
-    this->flags.prg_rom_pages = data[3];
-    this->flags.chr_rom_pages = data[4];
+    this->flags.prg_rom_pages = data[4];
+    this->flags.chr_rom_pages = data[5];
     
     //Can't use rom without prg_rom
     if(this->flags.prg_rom_pages == 0){
@@ -43,10 +44,10 @@ INES::INES(const uint8* data, uint32 data_len) {
     // T: has_trainer
     // B: has_battery
     // M: mirror_type (0 = horizontal, 1 = vertical)
-    this->flags.has_4screen = nth_bit(data[5], 3);
-    this->flags.has_trainer = nth_bit(data[5], 2);
-    this->flags.has_battery = nth_bit(data[5], 1);
-    this->flags.mirror_type = nth_bit(data[5], 0);
+    this->flags.has_4screen = nth_bit(data[6], 3);
+    this->flags.has_trainer = nth_bit(data[6], 2);
+    this->flags.has_battery = nth_bit(data[6], 1);
+    this->flags.mirror_type = nth_bit(data[6], 0);
 
     
     // 7       0
@@ -57,11 +58,11 @@ INES::INES(const uint8* data, uint32 data_len) {
     // P: is_PC10
     // V: is_VS
     // x: is_NES2 (when xx == 10)
-    this->flags.is_nes2 = nth_bit(data[6], 3) && !nth_bit(data[6], 2);
-    this->flags.is_PC10 = nth_bit(data[6], 1);
-    this->flags.is_VS   = nth_bit(data[6], 0);
+    this->flags.is_nes2 = nth_bit(data[7], 3) && !nth_bit(data[6], 2);
+    this->flags.is_PC10 = nth_bit(data[7], 1);
+    this->flags.is_VS   = nth_bit(data[7], 0);
     
-    this->mapper = data[5] >> 4 & (data[6] & 0x00FF);
+    this->mapper = data[6] >> 4 & (data[7] & 0x00FF);
 
     // Find addresses for the various ROM sections in the data, and throw them
     // into some ROM ADTs
