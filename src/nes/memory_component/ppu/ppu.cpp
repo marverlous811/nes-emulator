@@ -7,7 +7,7 @@
 #include <cstdio>
 
 PPU::~PPU() {}
-PPU::PPU(IMemory &mem, IMemory& oam, IMemory& dma)
+PPU::PPU(IMemory &mem, IMemory& oam, DMA& dma)
     : mem(mem), dma(dma), oam(oam)
 {
     for(uint i = 0; i < 256 * 240 * 4; i++)
@@ -116,7 +116,12 @@ uint8 PPU::read(uint16 addr) {
             if(this->reg.ppuctrl.I == 1) this->reg.ppuaddr.val += 32;
         } break;
         case OAMDMA: {
-            retval = this->dma[addr];
+            // This is not a valid operation...
+            // And it's not like this would return the cpu_data_bus val
+            // So, uh, screw it, just return 0 I guess?
+            fprintf(stderr, "[DMA] Reading DMA is undefined!\n");
+            retval = 0x00;
+
         } break;
         default: {
             retval = this->cpu_data_bus;
@@ -151,7 +156,12 @@ uint8 PPU::peek(uint16 addr) const {
             }
         } break;
         case OAMDMA: {
-            retval = this->dma.peek(addr);
+            // This is not a valid operation...
+            // And it's not like this would return the cpu_data_bus val
+            // So, uh, screw it, just return 0 I guess?
+            fprintf(stderr, "[DMA] Reading DMA is undefined!\n");
+            retval = 0x00;
+
         } break;
         default: {
             retval = this->cpu_data_bus;
@@ -216,12 +226,14 @@ void PPU::write(uint16 addr, uint8 val) {
         } break;
         case OAMDMA:
         {
-            this->dma[addr] = val;
             // DMA takes 513 / 514 CPU cycles (+1 cycle if starting on an odd CPU cycle)
             // The CPU doesn't do anthhing at that time, but the PPU does!
             uint dma_cycles = 513 + ((this->cycles / 3) % 2);
             for (uint i = 0; i < dma_cycles; i++)
                 this->cycle();
+            // 512 cycles of reading & writing
+            this->dma.start(val);
+            while (this->dma.isActive()) this->cycle();
         }   break;
         default: {
             fprintf(stderr,

@@ -10,20 +10,24 @@
 
 // CPU WRAM to PPU OAM Direct Memory Access (DMA) Unit
 // http://wiki.nesdev.com/w/index.php/PPU_programmer_reference#OAMDMA
-class DMA final : public IMemory {
+class DMA final{
 private:
     IMemory& cpu_wram;
     IMemory& ppu_oam;
+
+    bool in_dma;
+
+    uint8 page;  // What CPU page to read from
+    uint16 step; // How many transfers have occured (from 0x00 to 0xFF)
 
 public:
     ~DMA() = default;
     DMA(IMemory& cpu_wram, IMemory& ppu_oam);
 
-    //<Memory>
-    uint8 read(uint16 addr) override ;
-    uint8 peek(uint16 addr) const override ;
-    void write(uint16 addr, uint8 page) override ;
-    //</Memory>
+    void start(uint8 page);
+    void transfer();
+
+    bool isActive() const;
 };
 
 

@@ -9,26 +9,24 @@ DMA::DMA(IMemory &cpu_wram, IMemory &ppu_oam)
     : cpu_wram(cpu_wram), ppu_oam(ppu_oam)
 {}
 
-// Reading from DMA is not a valid operation...
-uint8 DMA::read(uint16 addr) {
-    assert(addr == 0x4014);
-    (void) addr;
-    return 0x0;
+void DMA::start(uint8 page) {
+    assert(this->in_dma == false);
+
+    this->in_dma = true;
+    this->page = page;
+    this->step = 0;
 }
 
-uint8 DMA::peek(uint16 addr) const {
-    assert(addr == 0x4014);
-    (void) addr;
-    return 0x0;
+void DMA::transfer() {
+    uint16 cpu_addr = this->step + uint16 (this->page << 8);
+    uint16 oam_addr = this->step;
+    this->ppu_oam[oam_addr] = this->cpu_wram[cpu_addr];
+    this->step++;
+
+    if (this->step > 0xFF)
+        this->in_dma = false;
 }
 
-void DMA::write(uint16 addr, uint8 page) {
-    assert(addr == 0x4014);
-    for(uint16 addr = 0; addr <= 256; addr++){
-        //read value from CPU WRAM
-        uint8 cpu_val = this->cpu_wram[(uint16(page) << 8) + addr];
-        //dump it into the PPU OAM
-        this->ppu_oam[addr] = cpu_val;
-
-    }
+bool DMA::isActive() const {
+    return this->in_dma;
 }

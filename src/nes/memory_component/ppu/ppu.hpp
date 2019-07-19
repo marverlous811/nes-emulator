@@ -5,6 +5,7 @@
 #ifndef NES_EMULATOR_PPU_HPP
 #define NES_EMULATOR_PPU_HPP
 
+#include <nes/memory_component/dma/dma.hpp>
 #include "util/util.h"
 #include "util/bitfield.h"
 #include "util/memory.h"
@@ -32,7 +33,7 @@ private:
 
     uint8  frame [ 240 * 256 * 4]; //Pixel buffer
     IMemory& mem;       //PPU 16 bit address space (should be wired to ppu_mmu)
-    IMemory& dma;
+    DMA& dma;
     IMemory& oam;       //PPU Object Attribute Memory
 
     uint8 cpu_data_bus; //PPU <-> CPU data bus
@@ -102,7 +103,7 @@ private:
     } reg;
 public:
     ~PPU();
-    PPU(IMemory& mem, IMemory& oam, IMemory& dma);
+    PPU(IMemory& mem, IMemory& oam, DMA& dma);
 
     void power_cycle();
     void reset();
