@@ -21,7 +21,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 
 include_directories(src)
-file(GLOB_RECURSE NES src/nes/*.cpp src/nes/*.hpp)
+file(GLOB_RECURSE NES src/nes/*.cpp src/nes/*.hpp src/nes/memory_component/*)
 file(GLOB_RECURSE util src/util/*cpp src/util/*.h src/util/*.hpp)
 
 SET(TEST src/test/cpuTest.cpp)

@@ -13,8 +13,9 @@
 #include "./cpu/cpu.hpp"
 #include "./cpu/cpu_mmu.hpp"
 #include "./cpu/ram.hpp"
-#include "./ppu/ppu_mmu.hpp"
-#include "./ppu/ppu.hpp"
+#include "./memory_component/ppu/ppu_mmu.hpp"
+#include "./memory_component/ppu/ppu.hpp"
+#include "./memory_component/dma/dma.hpp"
 #include "../util/util.h"
 
 int startNes(char* path);
@@ -29,15 +30,17 @@ private:
     PPU *ppu;
     //RAM
     Ram* cpu_wram;   //2k CPU general purpose RAM
-    Ram* ppu_pram;  //32 bytes PPU palette RAM
-    Ram* ppu_vram; //2k PPU nametable VRAM
+    Ram* ppu_pram;   //32 bytes PPU palette RAM
+    Ram* ppu_vram;   //2k PPU nametable VRAM
+    Ram* ppu_oam;    //256 bytes PPU object attrubute Memory (OAM)
 
     //JOY joy
     //CPU MMU
     CPU_MMU *cpu_mmu;
-    PPU_MMU* ppu_mmu;
     //PPU MMU
+    PPU_MMU* ppu_mmu;
     //DMA MMU
+    DMA* dma;
     
     /*-----------------  Flags  -----------------*/
     bool is_running;

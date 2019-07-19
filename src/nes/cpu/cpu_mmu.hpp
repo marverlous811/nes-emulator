@@ -23,7 +23,6 @@ private:
     IMemory& ram;
     IMemory& ppu;
     IMemory& apu;
-    IMemory& dma;
     IMemory& joy;
     
     // ROM is subject to change
@@ -33,7 +32,6 @@ public:
             IMemory& ram,
             IMemory& ppu,
             IMemory& apu,
-            IMemory& dma,
             IMemory& joy,
             Cartridge* rom
             );

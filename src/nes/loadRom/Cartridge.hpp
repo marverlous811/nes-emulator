@@ -13,7 +13,7 @@
 #include "../../util/memory.h"
 #include "INes.hpp"
 #include "../mapper/mapper.hpp"
-#include "../ppu/ppu.hpp"
+#include "../memory_component/ppu/ppu.hpp"
 
 class Cartridge final : public IMemory{
 public:

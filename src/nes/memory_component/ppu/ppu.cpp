@@ -3,9 +3,12 @@
 //
 
 #include "ppu.hpp"
+#include <assert.h>
 
 PPU::~PPU() {}
-PPU::PPU(IMemory &mem) : mem(mem) {
+PPU::PPU(IMemory &mem, IMemory& oam, IMemory& dma)
+    : mem(mem), dma(dma), oam(oam)
+{
     this->cycles = 0;
 
     this->scan.x = 0;
@@ -38,3 +41,55 @@ void PPU::cycle() {
 }
 
 const uint8* PPU::getFrame() const { return this->frame; }
+
+uint8 PPU::read(uint16 addr) {
+    assert((addr >= 0x2000 && addr <= 0x2007) || addr == 0x4014);
+
+    switch (addr){
+        case 0x2002: break; //PPUSTATUS
+        case 0x2004: break; //OAMDATA
+        case 0x2007: break; //PPUDATA
+        default:
+            break;
+    }
+
+    return 0x0;
+}
+
+uint8 PPU::peek(uint16 addr) const {
+    assert((addr >= 0x2000 && addr <= 0x2007) || addr == 0x4014);
+
+    switch (addr){
+        case 0x2002: break; //PPUSTATUS
+        case 0x2004: break; //OAMDATA
+        case 0x2007: break; //PPUDATA
+        default:
+            break;
+    }
+
+    return 0x0;
+}
+
+void PPU::write(uint16 addr, uint8 val) {
+    assert((addr >= 0x2000 && addr <= 0x2007) || addr == 0x4014);
+
+    switch (addr){
+        case 0x2000: break; //PPUCTRL
+        case 0x2001: break; //PPUMASK
+        case 0x2003: break; //OAMAADDR
+        case 0x2004: break; //OAMDATA
+        case 0x2005: break; //PPUSCROLL
+        case 0x2006: break; //PPUADDR
+        case 0x2007: break; //PPUDATA
+        case 0x4014: //OAMDMA
+        {
+            this->dma.write(addr, val);
+            // DMA takes 513 / 514 CPU cycles (+1 cycle if starting on an odd CPU cycle)
+            // The CPU doesn't do anthhing at that time, but the PPU does!
+            uint dma_cycles = 513 + ((this->cycles / 3) % 2);
+            for (uint i = 0; i < dma_cycles; i++)
+                this->cycle();
+        }   break;
+        default: break;
+    }
+}

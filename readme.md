@@ -5,8 +5,9 @@
  - Key Milestones
   - [x] Parse iNES files
   - [x] Create Cartridges (iNES + Mapper interface)
-  - [ ] CPU
+  - [x] CPU
     - [x] Set Up Memory Map
+    - [x] Hardware Structures (registers)
     - [x] Core Loop / Basic Functionality
       - [x] Read / Write RAM
       - [x] Addressing Modes
@@ -18,6 +19,12 @@
     - [x] Set Up Basic Rendering Context (SDL)
     - [x] Set Up Memory Map
     - [ ] Core rendering loop
+    - [ ] Hardware Structures
+      - [x] Framebuffer
+      - [x] Registers
+        - [ ] Map to memory
+      - ...
+    - [x] Implement DMA
     - TBD
   - [ ] APU
     - TBD

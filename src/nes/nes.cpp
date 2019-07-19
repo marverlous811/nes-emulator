@@ -174,13 +174,14 @@ Nes::Nes(){
     this->cpu_wram = new Ram(0x800);
     this->ppu_pram = new Ram(32);
     this->ppu_vram = new Ram(0x800);
-    
+    this->ppu_oam = new Ram(256);
+
     // Init MMUs
+    this->dma = new DMA(*this->cpu_wram, *this->ppu_oam);
     this->cpu_mmu = new CPU_MMU(
         /* ram */ *this->cpu_wram,
-        /* ppu */ *VoidMemory::Get(),
+        /* ppu */ *this->ppu,
         /* apu */ *VoidMemory::Get(),
-        /* dma */ *VoidMemory::Get(),
         /* joy */ *VoidMemory::Get(),
         /* rom */ this->cart
     );
@@ -193,13 +194,14 @@ Nes::Nes(){
     
     //create processor
     this->cpu = new CPU(*this->cpu_mmu);
-    this->ppu = new PPU(*this->ppu_mmu);
+    this->ppu = new PPU(*this->ppu_mmu, *this->ppu_oam,  *this->dma);
     
     this->is_running = false;
     this->clock_cycles = 0;
 }
 
 Nes::~Nes(){
+    delete this->dma;
     delete this->cpu;
     delete this->cpu_mmu;
     delete this->ppu;
