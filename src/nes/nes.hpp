@@ -13,6 +13,8 @@
 #include "./cpu/cpu.hpp"
 #include "./cpu/cpu_mmu.hpp"
 #include "./cpu/ram.hpp"
+#include "./ppu/ppu_mmu.hpp"
+#include "./ppu/ppu.hpp"
 #include "../util/util.h"
 
 int startNes(char* path);
@@ -24,14 +26,16 @@ private:
     /*------------  Owned Resources  ------------*/
     //CPU
     CPU *cpu;
+    PPU *ppu;
     //RAM
-    Ram* cpu_ram;   //2k CPU general purpose RAM
+    Ram* cpu_wram;   //2k CPU general purpose RAM
     Ram* ppu_pram;  //32 bytes PPU palette RAM
-    Ram* ppu_ciram; //2k PPU nametable VRAM
+    Ram* ppu_vram; //2k PPU nametable VRAM
 
     //JOY joy
     //CPU MMU
     CPU_MMU *cpu_mmu;
+    PPU_MMU* ppu_mmu;
     //PPU MMU
     //DMA MMU
     
@@ -49,8 +53,12 @@ public:
     void reset();        // Set all volatile components to default reset state
     void start();        // start execution
     void stop();         // stop execution
-    
-    void step_frame();         // Step processors
+
+    void cycle();        //run a single clock cycle
+    void step_frame();   //run the nes until there is a new frame to display
+                         //(calls cycle() internally)
+
+    const uint8* getFrame() const;
     
     bool isRunning() const;
 };

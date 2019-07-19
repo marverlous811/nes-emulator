@@ -15,7 +15,9 @@
     - [x] Handle Interrupts
     - [ ] Unofficial Opcodes Implemented (?)
   - [ ] PPU
-    - [ ] Set Up Memory Map
+    - [x] Set Up Basic Rendering Context (SDL)
+    - [x] Set Up Memory Map
+    - [ ] Core rendering loop
     - TBD
   - [ ] APU
     - TBD
@@ -28,6 +30,11 @@
       - [ ] _\(Stretch\)_ Switch to cycle-based emulation (vs instruction level)
   - Better error handling (something like Result in Rust)
     - [ ] Remove asserts
+  - Cleanup
+      - [ ] Get SDL out of the main function!
+      - [ ] Unify method naming (either camelCase or snake_case)
+      - [ ] Be more explicit with copy / move ctors
+      - [ ] Add `const` throughout the codebase (?)
   - Implement more Mappers
     - [x] 000
     - [ ] 001

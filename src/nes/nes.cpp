@@ -123,21 +123,10 @@ int startNes(char* path){
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(renderer);
-
-        for(int x = 0; x < RES_X; x++){
-            for(int y = 0; y < RES_Y; y++){
-                const unsigned int offset = (RES_X * 4 * y) + x * 4;
-                pixelBuff[offset + 0] = (sin((SDL_GetTicks()/ 1000.0)) + 1) * 126; //b
-                pixelBuff[offset + 1] = (float(y) / float(RES_Y)) * RES_X; // g
-                pixelBuff[offset + 2] = (float(x) / float(RES_X)) * RES_X; // r
-                pixelBuff[offset + 3] = SDL_ALPHA_OPAQUE;             // a
-            }
-        }
-
         SDL_UpdateTexture(
             texture,
             nullptr,
-            &pixelBuff[0],
+            nes->getFrame(),
             RES_X * 4
         );
 
@@ -182,22 +171,29 @@ int startNes(char* path){
 Nes::Nes(){
     this->cart = nullptr;
     // Init RAM modules
-    this->cpu_ram = new Ram(0x800);
+    this->cpu_wram = new Ram(0x800);
     this->ppu_pram = new Ram(32);
-    this->ppu_ciram = new Ram(0x800);
+    this->ppu_vram = new Ram(0x800);
     
     // Init MMUs
     this->cpu_mmu = new CPU_MMU(
-        /* ram */ *this->cpu_ram,
+        /* ram */ *this->cpu_wram,
         /* ppu */ *VoidMemory::Get(),
         /* apu */ *VoidMemory::Get(),
         /* dma */ *VoidMemory::Get(),
         /* joy */ *VoidMemory::Get(),
         /* rom */ this->cart
     );
+
+    this->ppu_mmu = new PPU_MMU(
+            *this->ppu_vram,
+            *this->ppu_pram,
+            this->cart
+    );
     
     //create processor
     this->cpu = new CPU(*this->cpu_mmu);
+    this->ppu = new PPU(*this->ppu_mmu);
     
     this->is_running = false;
     this->clock_cycles = 0;
@@ -206,9 +202,11 @@ Nes::Nes(){
 Nes::~Nes(){
     delete this->cpu;
     delete this->cpu_mmu;
-    delete this->cpu_ram;
+    delete this->ppu;
+    delete this->ppu_mmu;
+    delete this->cpu_wram;
     delete this->ppu_pram;
-    delete this->ppu_ciram;
+    delete this->ppu_vram;
 }
 
 bool Nes::loadCartridge(Cartridge *cart){
@@ -218,7 +216,7 @@ bool Nes::loadCartridge(Cartridge *cart){
     
     this->cart = cart;
     this->cpu_mmu->addCartridge(this->cart);
-    
+    this->ppu_mmu->addCartridge(this->cart);
     return true;
 }
 
@@ -238,32 +236,41 @@ bool Nes::isRunning() const{
 void Nes::power_cycle(){
     this->is_running = true;
     this->cpu->power_cycle();
-    this->cpu_ram->clear();
+    this->ppu->power_cycle();
+
+    this->cpu_wram->clear();
+    this->ppu_pram->clear();
+    this->ppu_vram->clear();
 }
 
 void Nes::reset(){
     this->is_running = true;
     this->cpu->reset();
+    this->ppu->reset();
 }
 
-void Nes::step_frame(){
+void Nes::cycle(){
     if (this->is_running == false) return;
-    // We need to run this thing until the PPU has a full frame ready to spit out
-    // Once the PPU is implemented, I will add a boolean to the return value of
-    // the PPU step method, and I will use that to determine when to break out of
-    // the loop.
 
-    // Right now though, i'm going to be a bum and just run the CPU for the
-    // equivalent ammount of time :P
-    // - PPU renders 262 scanlines per frame
-    // - Each scanline lasts for 341 PPU clock cycles
-    // - 1 CPU cycle = 3 PPU cycles
-
-//    constexpr uint32 CPU_CYCLES_PER_FRAME = 262 * 341 / 3;
+    //execute a CPU instruction
     uint8 cpu_cycles = this->cpu->step();
+
+    //Run the ppu 3x for every cpu_cycle it took
+    for(uint i = 0; i < cpu_cycles * 3; i++)
+        this->ppu->cycle();
+
     if(this->cpu->getState() == CPU::State::Halted){
         this->is_running = false;
     }
+}
 
-    this->clock_cycles += cpu_cycles * 3;
+void Nes::step_frame() {
+    if(this->is_running == false) return;
+
+    for(uint i = 0; i < 2000; i++)
+        this->cycle();
+}
+
+const uint8* Nes::getFrame() const {
+    return this->ppu->getFrame();
 }
